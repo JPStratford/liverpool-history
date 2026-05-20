@@ -1,0 +1,37 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+const { frontmatter } = Astro.props;
+---
+
+<BaseLayout pageTitle={frontmatter.title}>
+
+  {frontmatter.heroImage && (
+    <div class="hero-image">
+      <img src={frontmatter.heroImage.url} alt={frontmatter.heroImage.alt} />
+    </div>
+  )}
+
+  <article>
+    <header class="article-header">
+      <h1>{frontmatter.title}</h1>
+      <div class="article-meta">
+        {frontmatter.eras.map((era: string) => (
+          <a href={`/eras/${era}`} class="tag era-tag">{era}</a>
+        ))}
+        {frontmatter.topics.map((topic: string) => (
+          <a href={`/topics/${topic}`} class="tag topic-tag">{topic}</a>
+        ))}
+        {frontmatter.places.map((place: string) => (
+          <a href={`/places/${place}`} class="tag place-tag">{place}</a>
+        ))}
+      </div>
+      <p class="standfirst">{frontmatter.standfirst}</p>
+    </header>
+
+    <div class="article-body">
+      <slot />
+    </div>
+  </article>
+
+</BaseLayout>
