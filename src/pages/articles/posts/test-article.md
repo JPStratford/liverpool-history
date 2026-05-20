@@ -8,7 +8,7 @@ topics: ["architecture"]
 places: ["waterfront"]
 heroImage:
   url: "https://placehold.co/600x400/png"
-  alt: "Liverpool Pier Head from the River Mersey"
+  alt: "Placeholder"
 featured: false
 draft: true
 ---
