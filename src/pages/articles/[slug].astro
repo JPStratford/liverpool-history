@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+export async function getStaticPaths() {
+  return [];
+}
+const { slug } = Astro.params;
+---
+<BaseLayout pageTitle={slug}>
+  <h1>{slug}</h1>
+</BaseLayout>
