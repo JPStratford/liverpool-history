@@ -32,9 +32,32 @@ const { pageTitle } = Astro.props;
     <main>
       <slot />
     </main>
-    <footer>
-      <p>© {new Date().getFullYear()} rpool.live</p>
-    </footer>
+<footer>
+  <div class="footer-inner">
+    <div>
+      <p class="footer-brand">rpool.live</p>
+      <p class="footer-tagline">Five centuries of the world's most consequential port city.</p>
+    </div>
+    <div>
+      <p class="footer-heading">Explore</p>
+      <ul class="footer-links">
+        <li><a href="/eras/">Eras</a></li>
+        <li><a href="/topics/">Topics</a></li>
+        <li><a href="/maps/">Maps</a></li>
+        <li><a href="/about/">About</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-heading">Visit</p>
+      <ul class="footer-links">
+        <li><a href="/tours/">Historical Tours</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© {new Date().getFullYear()} rpool.live. All rights reserved.</p>
+  </div>
+</footer>
     <script>
       const toggle = document.querySelector('.nav-toggle');
       const links = document.querySelector('.nav-links');
