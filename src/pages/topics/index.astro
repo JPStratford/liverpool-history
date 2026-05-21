@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+const allArticles = await getCollection('articles');
+const publishedArticles = allArticles.filter((article: CollectionEntry<'articles'>) => !article.data.draft);
+
+const allTopics = [...new Set(publishedArticles.map((article: CollectionEntry<'articles'>) => 
+  article.data.topics).flat())].sort();
+---
+
+<BaseLayout pageTitle="Topics">
+  <div class="page-header">
+    <h1>Explore by Topic</h1>
+    <p class="subtitle">Browse articles by theme</p>
+  </div>
+
+  {allTopics.length > 0 ? (
+    <div class="topics-grid">
+      {allTopics.map((topic: string) => (
+        <a href={`/topics/${topic}`} class="topic-card">
+          <span class="topic-name">{topic}</span>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div class="topics-empty">
+      <p>Topics will appear here as articles are published.</p>
+    </div>
+  )}
+</BaseLayout>
