@@ -207,6 +207,7 @@ main {
 .page-header {
   margin-bottom: var(--space-xl);
   padding-bottom: var(--space-lg);
+  padding-top: 80px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -220,6 +221,9 @@ main {
   color: var(--color-mersey);
 }
 
+.page-content {
+  padding-top: 80px;
+}
 /* ================================
    NAVIGATION
 ================================ */

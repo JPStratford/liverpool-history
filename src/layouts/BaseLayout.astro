@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-const { pageTitle } = Astro.props;
+const { pageTitle, transparentHeader = false } = Astro.props;
 ---
 <html lang="en">
   <head>
@@ -14,8 +14,7 @@ const { pageTitle } = Astro.props;
 	<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" /> 
 </head>
   <body>
-    <header>
-      <nav>
+    <header class={transparentHeader ? '' : 'scrolled'} data-transparent={transparentHeader}>      <nav>
         <a href="/" class="nav-logo">rpool.live</a>
         <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">
           Menu
@@ -67,14 +66,18 @@ const { pageTitle } = Astro.props;
         links?.classList.toggle('open');
       });
 
-          const header = document.querySelector('header');
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 50) {
-    header?.classList.add('scrolled');
-  } else {
-    header?.classList.remove('scrolled');
-  }
-});
+const header = document.querySelector('header');
+const isTransparent = header?.getAttribute('data-transparent') === 'true';
+
+if (isTransparent) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      header?.classList.add('scrolled');
+    } else {
+      header?.classList.remove('scrolled');
+    }
+  });
+}
     </script>
   </body>
 </html>
