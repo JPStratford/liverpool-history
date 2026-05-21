@@ -17,14 +17,14 @@
   --font-ui: 'Inter', system-ui, sans-serif;
 
   /* Type scale */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1.125rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2rem;
-  --text-3xl: 2.75rem;
-  --text-4xl: 3.75rem;
+--text-xs:  0.75rem;    /* 12px — labels, captions */
+--text-sm:  0.875rem;   /* 14px — UI, tags, meta */
+--text-base: 1.25rem;   /* 20px — body text */
+--text-lg:  1.4rem;     /* 22.4px — standfirst, lead text */
+--text-xl:  1.65rem;    /* 26.4px — h3 / minor headings */
+--text-2xl: 2.1rem;     /* 33.6px — h2 / section headings */
+--text-3xl: 2.75rem;    /* 44px — h1 / article titles */
+--text-4xl: 3.75rem;    /* 60px — hero display only */
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -703,13 +703,6 @@ footer {
   opacity: 0.5;
 }
 
-@media (max-width: 768px) {
-  .footer-inner {
-    grid-template-columns: 1fr;
-    gap: var(--space-lg);
-  }
-}
-
 /* ================================
    ERA PAGES
 ================================ */
@@ -1103,28 +1096,51 @@ main {
   color: var(--color-mersey);
 }
 
-@media (max-width: 768px) {
-  .about-content {
-    grid-template-columns: 1fr;
-  }
-
-  .about-portrait {
-    position: static;
-    max-width: 240px;
-  }
-}
-
 /* ================================
    RESPONSIVE
 ================================ */
 
+@media (max-width: 900px) {
+  .article-container {
+    grid-template-columns: 1fr;
+    padding-top: 80px;
+  }
+
+  .article-toc {
+    display: none !important;
+  }
+}
+
 @media (max-width: 768px) {
+  :root {
+    --text-base: 1.1rem;
+    --text-lg: 1.25rem;
+  }
+
+  h1 {
+    font-size: var(--text-3xl);
+  }
+
   main {
     padding: 0 var(--space-md) var(--space-xl) var(--space-md);
   }
 
-  .article-container {
-    padding-top: 80px;
+  .container {
+    padding: 0 var(--space-md);
+  }
+
+  .home-intro {
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  blockquote {
+    padding-left: var(--space-md);
+  }
+
+  .map-inline {
+    float: none;
+    width: 100%;
+    margin: var(--space-lg) 0;
   }
 
   .article-header h1 {
@@ -1133,5 +1149,19 @@ main {
 
   .home-hero {
     margin-left: calc(50% - 50vw);
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  .about-content {
+    grid-template-columns: 1fr;
+  }
+
+  .about-portrait {
+    position: static;
+    max-width: 240px;
   }
 }

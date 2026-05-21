@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+const allArticles = await getCollection('articles');
+const publishedArticles = allArticles.filter((article: CollectionEntry<'articles'>) => !article.data.draft);
+
+const allPlaces = [...new Set(publishedArticles.map((article: CollectionEntry<'articles'>) => 
+  article.data.places).flat())].sort();
+---
+
+<BaseLayout pageTitle="Places">
+  <div class="page-header">
+    <h1>Explore by Place</h1>
+    <p class="subtitle">Browse articles by location</p>
+  </div>
+
+  {allPlaces.length > 0 ? (
+    <div class="topics-grid">
+      {allPlaces.map((place: string) => (
+        <a href={`/places/${place}`} class="topic-card">
+          <span class="topic-name">{place}</span>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div class="topics-empty">
+      <p>Places will appear here as articles are published.</p>
+    </div>
+  )}
+</BaseLayout>

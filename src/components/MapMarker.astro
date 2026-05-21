@@ -1,0 +1,144 @@
+---
+interface Props {
+  lat: number;
+  lng: number;
+  zoom?: number;
+  caption?: string;
+  height?: string;
+  inline?: boolean;
+  static?: boolean;
+  float?: 'left' | 'right';
+}
+
+const { 
+  lat, 
+  lng, 
+  zoom = 15, 
+  caption, 
+  height = '400px',
+  inline = false,
+  static: isStatic = false,
+  float = 'right'
+} = Astro.props;
+
+const mapId = `map-${Math.random().toString(36).slice(2, 9)}`;
+const tileUrl = `https://tile.openstreetmap.org/${zoom}/${Math.floor((lng + 180) / 360 * Math.pow(2, zoom))}/${Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom))}.png`;
+---
+
+<figure class={`map-figure${inline ? ` map-inline map-float-${float}` : ''}`}>
+  {isStatic ? (
+    <div class="map-static-wrapper" style={inline ? '' : `height: ${height}`}>
+      <img 
+        src={`https://tile.openstreetmap.org/${zoom}/${Math.floor((lng + 180) / 360 * Math.pow(2, zoom))}/${Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom))}.png`}
+        alt={caption ?? 'Map location'}
+        class="map-static-img"
+      />
+      <div class="map-attribution">© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</div>
+    </div>
+  ) : (
+    <div id={mapId} class="map-container" style={inline ? '' : `height: ${height}`}></div>
+  )}
+  {caption && <figcaption class="map-caption">{caption}</figcaption>}
+</figure>
+
+{!isStatic && (
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script define:vars={{ mapId, lat, lng, zoom }}>
+    import('https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js').then(L => {
+      const map = L.map(mapId).setView([lat, lng], zoom);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      const icon = L.divIcon({
+        html: `<svg viewBox="0 0 38 50" width="38" height="50" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19,1 C30,1 37,10 37,18.5 C37,32 19,49 19,49 C19,49 1,32 1,18.5 C1,10 8,1 19,1 Z" fill="#C4956A" stroke="#1C1814" stroke-width="1.5"/>
+          <circle cx="19" cy="18.5" r="5.5" fill="#1C1814"/>
+        </svg>`,
+        className: '',
+        iconSize: [38, 50],
+        iconAnchor: [19, 49],
+      });
+
+      L.marker([lat, lng], { icon }).addTo(map);
+    });
+  </script>
+)}
+
+<style>
+  .map-figure {
+    margin: 2rem 0;
+  }
+
+  .map-inline {
+    width: 200px;
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .map-float-left {
+    float: left;
+    margin-right: 1.75rem;
+  }
+
+  .map-float-right {
+    float: right;
+    margin-left: 1.75rem;
+  }
+
+  .map-container {
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--color-border);
+  }
+
+  .map-inline .map-container {
+    height: 200px;
+  }
+
+  .map-static-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+
+  .map-inline .map-static-wrapper {
+    height: 200px;
+  }
+
+  .map-static-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .map-attribution {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.65rem;
+    background: rgba(255,255,255,0.7);
+    padding: 1px 4px;
+  }
+
+  .map-attribution a {
+    color: inherit;
+  }
+
+  .map-caption {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: var(--text-sm);
+    color: var(--color-mersey);
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  .map-inline .map-caption {
+    font-size: 0.75rem;
+  }
+</style>
