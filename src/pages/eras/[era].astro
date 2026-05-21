@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const eras = await getCollection('eras');
+  return eras.map((era: CollectionEntry<'eras'>) => ({
+    params: { era: era.data.slug },
+    props: { era },
+  }));
+}
+
+const { era } = Astro.props;
+---
+
+<BaseLayout pageTitle={era.data.name}>
+  <div class="page-header">
+    <h1>{era.data.name}</h1>
+    <p class="subtitle">{era.data.dateRange}</p>
+  </div>
+
+  <div class="era-summary">
+    <p>{era.data.summary}</p>
+  </div>
+
+</BaseLayout>
