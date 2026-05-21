@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -12,6 +12,11 @@ export async function getStaticPaths() {
 }
 
 const { era } = Astro.props;
+
+const allArticles = await getCollection('articles');
+const eraArticles = allArticles.filter((article: CollectionEntry<'articles'>) => 
+  article.data.eras.includes(era.data.slug) && !article.data.draft
+);
 ---
 
 <BaseLayout pageTitle={era.data.name}>
@@ -23,5 +28,35 @@ const { era } = Astro.props;
   <div class="era-summary">
     <p>{era.data.summary}</p>
   </div>
+
+  {eraArticles.length > 0 ? (
+    <div class="era-articles">
+      <h2>Articles</h2>
+      <div class="article-grid">
+        {eraArticles.map((article: CollectionEntry<'articles'>) => (
+          <a href={`/articles/${article.id}`} class="article-card">
+            {article.data.heroImage && (
+              <div class="article-card-image">
+                <img src={article.data.heroImage.url} alt={article.data.heroImage.alt} />
+              </div>
+            )}
+            <div class="article-card-content">
+              <h3 class="article-card-title">{article.data.title}</h3>
+              <p class="article-card-standfirst">{article.data.standfirst}</p>
+              <div class="article-card-tags">
+                {article.data.topics.map((topic: string) => (
+                  <span class="tag topic-tag">{topic}</span>
+                ))}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  ) : (
+    <div class="era-empty">
+      <p>Articles for this era are coming soon.</p>
+    </div>
+  )}
 
 </BaseLayout>
