@@ -1,0 +1,55 @@
+---
+const { src, alt, caption } = Astro.props;
+---
+
+<figure class="lightbox-figure">
+  <img 
+    src={src} 
+    alt={alt} 
+    class="lightbox-trigger"
+    loading="lazy"
+  />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<div class="lightbox-overlay" role="dialog" aria-modal="true" aria-label={alt}>
+  <button class="lightbox-close" aria-label="Close image">✕</button>
+  <img src={src} alt={alt} class="lightbox-full" />
+  {caption && <p class="lightbox-caption">{caption}</p>}
+</div>
+
+<script>
+  const figures = document.querySelectorAll('.lightbox-figure');
+  
+  figures.forEach((figure) => {
+    const trigger = figure.querySelector('.lightbox-trigger');
+    const overlay = figure.nextElementSibling as HTMLElement;
+    const closeBtn = overlay?.querySelector('.lightbox-close');
+
+    trigger?.addEventListener('click', () => {
+      overlay?.classList.add('lightbox-open');
+      document.body.style.overflow = 'hidden';
+    });
+
+    closeBtn?.addEventListener('click', () => {
+      overlay?.classList.remove('lightbox-open');
+      document.body.style.overflow = '';
+    });
+
+    overlay?.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('lightbox-open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.lightbox-overlay.lightbox-open').forEach((overlay) => {
+        (overlay as HTMLElement).classList.remove('lightbox-open');
+        document.body.style.overflow = '';
+      });
+    }
+  });
+</script>

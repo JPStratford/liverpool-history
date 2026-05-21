@@ -503,6 +503,80 @@ nav {
   height: 100%;
 }
 
+.lightbox-figure {
+  margin: var(--space-xl) 0;
+}
+
+.lightbox-trigger {
+  cursor: zoom-in;
+  transition: opacity var(--transition);
+  width: 100%;
+}
+
+.lightbox-trigger:hover {
+  opacity: 0.92;
+}
+
+figcaption {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-mersey);
+  margin-top: var(--space-sm);
+  font-style: italic;
+}
+
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(28, 24, 20, 0.95);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: var(--space-xl);
+}
+
+.lightbox-overlay.lightbox-open {
+  display: flex;
+}
+
+.lightbox-full {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  background: none;
+  border: none;
+  color: var(--color-background);
+  font-size: var(--text-xl);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity var(--transition);
+  line-height: 1;
+}
+
+.lightbox-close:hover {
+  opacity: 1;
+}
+
+.lightbox-caption {
+  color: var(--color-background);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-style: italic;
+  margin-top: var(--space-md);
+  opacity: 0.7;
+  text-align: center;
+}
+
+
 /* ================================
    TAGS
 ================================ */
