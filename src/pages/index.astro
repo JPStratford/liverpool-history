@@ -1,8 +1,84 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-const pageTitle = "Liverpool History";
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+const allArticles = await getCollection('articles');
+const featuredArticles = allArticles.filter((article: CollectionEntry<'articles'>) => 
+  !article.data.draft && article.data.featured
+);
+const recentArticles = allArticles
+  .filter((article: CollectionEntry<'articles'>) => !article.data.draft)
+  .slice(0, 3);
+
+const eras = await getCollection('eras');
+const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'eras'>) => 
+  a.data.order - b.data.order);
 ---
-<BaseLayout pageTitle={pageTitle}>
-  <h1>Welcome to rpool.live</h1>
-  <p>Five centuries of the world's most consequential port city.</p>
+
+<BaseLayout pageTitle="Liverpool History">
+
+  <div class="home-hero">
+    <div class="home-hero-content">
+      <h1 class="home-hero-title">rpool.live</h1>
+      <p class="home-hero-subtitle">Five centuries of the world's most consequential port city.</p>
+      <a href="/eras/" class="home-hero-cta">Explore the history</a>
+    </div>
+  </div>
+
+  <div class="home-intro container">
+    <p>Liverpool's history is one of extraordinary ambition, moral complexity, and fierce civic pride. This site is a growing reference archive — quality-first articles, interactive maps, and original photography exploring the city across five centuries.</p>
+  </div>
+
+  <section class="home-eras container">
+    <h2 class="section-heading">Explore by Era</h2>
+    <div class="eras-grid">
+      {sortedEras.map((era: CollectionEntry<'eras'>) => (
+        <a href={`/eras/${era.data.slug}`} class="era-card">
+          {era.data.heroImage.url && (
+            <div class="era-card-image">
+              <img src={era.data.heroImage.url} alt={era.data.heroImage.alt} />
+            </div>
+          )}
+          <div class="era-card-content">
+            <p class="era-card-date">{era.data.dateRange}</p>
+            <h3 class="era-card-name">{era.data.name}</h3>
+            <p class="era-card-description">{era.data.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  {recentArticles.length > 0 && (
+    <section class="home-articles container">
+      <h2 class="section-heading">Recent Articles</h2>
+      <div class="article-grid">
+        {recentArticles.map((article: CollectionEntry<'articles'>) => (
+          <a href={`/articles/${article.id}`} class="article-card">
+            {article.data.heroImage && (
+              <div class="article-card-image">
+                <img src={article.data.heroImage.url} alt={article.data.heroImage.alt} />
+              </div>
+            )}
+            <div class="article-card-content">
+              <h3 class="article-card-title">{article.data.title}</h3>
+              <p class="article-card-standfirst">{article.data.standfirst}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="home-tours container">
+    <div class="tours-inner">
+      <div class="tours-text">
+        <h2 class="section-heading">Historical Walking Tours</h2>
+        <p>Explore Liverpool's history in person with a guided walking tour. Each tour is tailored to your interests — from the Georgian merchant quarter to the Victorian waterfront, the stories of emigration, and the city's remarkable modern reinvention.</p>
+        <a href="/tours/" class="tours-link">Find out more</a>
+      </div>
+    </div>
+  </section>
+
 </BaseLayout>
