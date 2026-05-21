@@ -12,26 +12,71 @@ const { frontmatter } = Astro.props;
     </div>
   )}
 
-  <article>
-    <header class="article-header">
-      <h1>{frontmatter.title}</h1>
-      <div class="article-meta">
-        {frontmatter.eras.map((era: string) => (
-          <a href={`/eras/${era}`} class="tag era-tag">{era}</a>
-        ))}
-        {frontmatter.topics.map((topic: string) => (
-          <a href={`/topics/${topic}`} class="tag topic-tag">{topic}</a>
-        ))}
-        {frontmatter.places.map((place: string) => (
-          <a href={`/places/${place}`} class="tag place-tag">{place}</a>
-        ))}
-      </div>
-      <p class="standfirst">{frontmatter.standfirst}</p>
-    </header>
+  <article class="article-container">
+    <div class="article-main">
+      <header class="article-header">
+        <h1>{frontmatter.title}</h1>
+        <div class="article-meta">
+          {frontmatter.eras.map((era: string) => (
+            <a href={`/eras/${era}`} class="tag era-tag">{era}</a>
+          ))}
+          {frontmatter.topics.map((topic: string) => (
+            <a href={`/topics/${topic}`} class="tag topic-tag">{topic}</a>
+          ))}
+          {frontmatter.places.map((place: string) => (
+            <a href={`/places/${place}`} class="tag place-tag">{place}</a>
+          ))}
+        </div>
+        <p class="standfirst">{frontmatter.standfirst}</p>
+      </header>
 
-    <div class="article-body">
-      <slot />
+      <div class="article-body" id="article-body">
+        <slot />
+      </div>
     </div>
+
+    <aside class="article-toc" id="article-toc">
+      <p class="toc-heading">Contents</p>
+      <nav id="toc-nav"></nav>
+    </aside>
   </article>
 
 </BaseLayout>
+
+<script>
+  const articleBody = document.getElementById('article-body');
+  const tocNav = document.getElementById('toc-nav');
+  const toc = document.getElementById('article-toc');
+
+  if (articleBody && tocNav && toc) {
+    const headings = articleBody.querySelectorAll('h2');
+
+    if (headings.length >= 3) {
+      toc.classList.add('toc-visible');
+
+      headings.forEach((heading, index) => {
+        const id = `section-${index}`;
+        heading.setAttribute('id', id);
+
+        const link = document.createElement('a');
+        link.href = `#${id}`;
+        link.textContent = heading.textContent;
+        link.className = 'toc-link';
+        tocNav.appendChild(link);
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.getAttribute('id');
+          const link = tocNav.querySelector(`a[href="#${id}"]`);
+          if (entry.isIntersecting) {
+            tocNav.querySelectorAll('.toc-link').forEach(l => l.classList.remove('toc-active'));
+            link?.classList.add('toc-active');
+          }
+        });
+      }, { rootMargin: '-10% 0px -80% 0px' });
+
+      headings.forEach(heading => observer.observe(heading));
+    }
+  }
+</script>
