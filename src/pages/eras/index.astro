@@ -4,7 +4,6 @@ import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 const eras = await getCollection('eras');
-console.log('eras found:', eras.length);
 const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'eras'>) => a.data.order - b.data.order);
 ---
 
