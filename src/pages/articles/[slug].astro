@@ -1,10 +1,20 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
 export async function getStaticPaths() {
-  return [];
+  const articles = await getCollection('articles');
+  return articles.map((article: CollectionEntry<'articles'>) => ({
+    params: { slug: article.id },
+    props: { article },
+  }));
 }
-const { slug } = Astro.params;
+
+const { article } = Astro.props;
+const { Content } = await render(article);
 ---
-<BaseLayout pageTitle={slug}>
-  <h1>{slug}</h1>
-</BaseLayout>
+
+<ArticleLayout frontmatter={article.data}>
+  <Content />
+</ArticleLayout>

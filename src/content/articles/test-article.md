@@ -1,5 +1,4 @@
 ---
-layout: ../../../layouts/ArticleLayout.astro
 title: "Test Article"
 description: "A test article to verify the layout is working correctly."
 standfirst: "This is the standfirst — a brief summary of the article that appears prominently beneath the title."
@@ -7,8 +6,8 @@ eras: ["georgian"]
 topics: ["architecture"]
 places: ["waterfront"]
 heroImage:
-  url: "https://placehold.co/600x400/png"
-  alt: "Placeholder"
+  url: "https://placehold.co/1200x600"
+  alt: "Test hero image"
 featured: false
 draft: true
 ---
