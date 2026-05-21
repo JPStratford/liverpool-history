@@ -17,14 +17,14 @@
   --font-ui: 'Inter', system-ui, sans-serif;
 
   /* Type scale */
---text-xs:  0.75rem;    /* 12px — labels, captions */
---text-sm:  0.875rem;   /* 14px — UI, tags, meta */
---text-base: 1.25rem;   /* 20px — body text */
---text-lg:  1.4rem;     /* 22.4px — standfirst, lead text */
---text-xl:  1.65rem;    /* 26.4px — h3 / minor headings */
---text-2xl: 2.1rem;     /* 33.6px — h2 / section headings */
---text-3xl: 2.75rem;    /* 44px — h1 / article titles */
---text-4xl: 3.75rem;    /* 60px — hero display only */
+  --text-xs:  0.75rem;
+  --text-sm:  0.875rem;
+  --text-base: 1.25rem;
+  --text-lg:  1.4rem;
+  --text-xl:  1.65rem;
+  --text-2xl: 2.1rem;
+  --text-3xl: 2.75rem;
+  --text-4xl: 3.75rem;
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -65,6 +65,7 @@ body {
   line-height: 1.8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  padding-top: 0;
 }
 
 img {
@@ -188,6 +189,7 @@ main {
   padding: 0 0 var(--space-xl) 0;
   max-width: var(--max-width-wide);
   margin: 0 auto;
+  padding-top: 0;
 }
 
 .hero-image {
@@ -203,7 +205,6 @@ main {
   object-position: center;
 }
 
-/* Page header — used on era and index pages */
 .page-header {
   margin-bottom: var(--space-xl);
   padding-bottom: var(--space-lg);
@@ -224,6 +225,7 @@ main {
 .page-content {
   padding-top: 80px;
 }
+
 /* ================================
    NAVIGATION
 ================================ */
@@ -305,7 +307,6 @@ nav {
   padding-bottom: 2px;
 }
 
-/* Mobile navigation */
 .nav-toggle {
   display: none;
   background: none;
@@ -425,6 +426,7 @@ nav {
 
 .article-main {
   min-width: 0;
+  transform: translateZ(0);
 }
 
 .article-toc {
@@ -575,7 +577,6 @@ figcaption {
   opacity: 0.7;
   text-align: center;
 }
-
 
 /* ================================
    TAGS
@@ -1004,14 +1005,6 @@ footer {
 .tours-link:hover {
   color: var(--color-text);
   border-color: var(--color-text);
-}
-
-body {
-  padding-top: 0;
-}
-
-main {
-  padding-top: 0;
 }
 
 /* ================================

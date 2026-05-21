@@ -22,7 +22,6 @@ const {
 } = Astro.props;
 
 const mapId = `map-${Math.random().toString(36).slice(2, 9)}`;
-const tileUrl = `https://tile.openstreetmap.org/${zoom}/${Math.floor((lng + 180) / 360 * Math.pow(2, zoom))}/${Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom))}.png`;
 ---
 
 <figure class={`map-figure${inline ? ` map-inline map-float-${float}` : ''}`}>
@@ -36,35 +35,53 @@ const tileUrl = `https://tile.openstreetmap.org/${zoom}/${Math.floor((lng + 180)
       <div class="map-attribution">© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors</div>
     </div>
   ) : (
-    <div id={mapId} class="map-container" style={inline ? '' : `height: ${height}`}></div>
+    <div id={mapId} class="map-container" style={`--map-height: ${height}`}></div>
   )}
   {caption && <figcaption class="map-caption">{caption}</figcaption>}
 </figure>
 
-{!isStatic && (
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script define:vars={{ mapId, lat, lng, zoom }}>
-    import('https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js').then(L => {
-      const map = L.map(mapId).setView([lat, lng], zoom);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-      }).addTo(map);
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script define:vars={{ mapId, lat, lng, zoom }}>
+  // @ts-nocheck
+  window.__pendingMaps = window.__pendingMaps || [];
+  window.__pendingMaps.push({ mapId, lat, lng, zoom });
+</script>
 
-      const icon = L.divIcon({
-        html: `<svg viewBox="0 0 38 50" width="38" height="50" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19,1 C30,1 37,10 37,18.5 C37,32 19,49 19,49 C19,49 1,32 1,18.5 C1,10 8,1 19,1 Z" fill="#C4956A" stroke="#1C1814" stroke-width="1.5"/>
-          <circle cx="19" cy="18.5" r="5.5" fill="#1C1814"/>
-        </svg>`,
-        className: '',
-        iconSize: [38, 50],
-        iconAnchor: [19, 49],
+<script>
+  // @ts-nocheck
+  window.addEventListener('load', () => {
+    if (!window.__mapsInitialised) {
+      window.__mapsInitialised = true;
+      (window.__pendingMaps || []).forEach(({ mapId, lat, lng, zoom }) => {
+        const container = document.getElementById(mapId);
+        if (!container) return;
+        const map = L.map(container, { scrollWheelZoom: false });
+        map.whenReady(() => {
+          map.invalidateSize(true);
+          map.setView([lat, lng], zoom);
+        });
+        map.setView([lat, lng], zoom);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+        }).addTo(map);
+const svgString = `<svg viewBox="0 0 38 52" width="38" height="52" xmlns="http://www.w3.org/2000/svg">
+  <path d="M19,2 C29,2 36,11 36,19.5 C36,33 19,50 19,50 C19,50 2,33 2,19.5 C2,11 9,2 19,2 Z" fill="#C4956A" stroke="#1C1814" stroke-width="1.5"/>
+  <circle cx="19" cy="19.5" r="5.5" fill="#1C1814"/>
+</svg>`;
+
+const icon = L.icon({
+  iconUrl: 'data:image/svg+xml;base64,' + btoa(svgString),
+  iconSize: [38, 52],
+  iconAnchor: [19, 52],
+});
+        L.marker([lat, lng], { icon }).addTo(map);
+        new ResizeObserver(() => map.invalidateSize()).observe(container);
       });
-
-      L.marker([lat, lng], { icon }).addTo(map);
-    });
-  </script>
-)}
+    }
+  });
+</script>
 
 <style>
   .map-figure {
@@ -89,7 +106,7 @@ const tileUrl = `https://tile.openstreetmap.org/${zoom}/${Math.floor((lng + 180)
 
   .map-container {
     width: 100%;
-    height: 100%;
+    height: var(--map-height, 400px);
     border: 1px solid var(--color-border);
   }
 
@@ -140,5 +157,13 @@ const tileUrl = `https://tile.openstreetmap.org/${zoom}/${Math.floor((lng + 180)
 
   .map-inline .map-caption {
     font-size: 0.75rem;
+  }
+
+  :global(.leaflet-container *) {
+    box-sizing: content-box;
+  }
+
+  :global(.leaflet-container) {
+    box-sizing: border-box;
   }
 </style>
