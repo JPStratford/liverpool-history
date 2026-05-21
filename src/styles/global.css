@@ -1039,3 +1039,25 @@ main {
     max-width: 240px;
   }
 }
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 768px) {
+  main {
+    padding: 0 var(--space-md) var(--space-xl) var(--space-md);
+  }
+
+  .article-container {
+    padding-top: 80px;
+  }
+
+  .article-header h1 {
+    font-size: var(--text-3xl);
+  }
+
+  .home-hero {
+    margin-left: calc(50% - 50vw);
+  }
+}
