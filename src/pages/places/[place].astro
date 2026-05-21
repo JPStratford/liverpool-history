@@ -1,10 +1,47 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
 export async function getStaticPaths() {
-  return [];
+  const articles = await getCollection('articles');
+  const publishedArticles = articles.filter((article: CollectionEntry<'articles'>) => !article.data.draft);
+  
+  const allPlaces = [...new Set(publishedArticles.map((article: CollectionEntry<'articles'>) => 
+    article.data.places).flat())];
+  
+  return allPlaces.map((place: string) => {
+    const placeArticles = publishedArticles.filter((article: CollectionEntry<'articles'>) => 
+      article.data.places.includes(place));
+    return {
+      params: { place },
+      props: { place, articles: placeArticles },
+    };
+  });
 }
-const { topic } = Astro.params;
+
+const { place, articles } = Astro.props;
 ---
-<BaseLayout pageTitle={topic}>
-  <h1>{topic}</h1>
+
+<BaseLayout pageTitle={place}>
+  <div class="page-header">
+    <h1>{place}</h1>
+    <p class="subtitle">Articles related to this place</p>
+  </div>
+
+  <div class="article-grid">
+    {articles.map((article: CollectionEntry<'articles'>) => (
+      <a href={`/articles/${article.id}`} class="article-card">
+        {article.data.heroImage && (
+          <div class="article-card-image">
+            <img src={article.data.heroImage.url} alt={article.data.heroImage.alt} />
+          </div>
+        )}
+        <div class="article-card-content">
+          <h3 class="article-card-title">{article.data.title}</h3>
+          <p class="article-card-standfirst">{article.data.standfirst}</p>
+        </div>
+      </a>
+    ))}
+  </div>
 </BaseLayout>
