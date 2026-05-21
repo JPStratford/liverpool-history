@@ -519,3 +519,87 @@ footer {
     gap: var(--space-lg);
   }
 }
+
+/* ================================
+   ERA PAGES
+================================ */
+
+.eras-intro {
+  max-width: var(--max-width-content);
+  margin-bottom: var(--space-xl);
+}
+
+.eras-intro p {
+  font-size: var(--text-lg);
+  line-height: 1.8;
+  color: var(--color-mersey);
+}
+
+.eras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.era-card {
+  display: block;
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: all var(--transition);
+  color: var(--color-text);
+}
+
+.era-card:hover {
+  border-color: var(--color-sandstone);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(28, 24, 20, 0.08);
+}
+
+.era-card-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-color: var(--color-border);
+}
+
+.era-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 400ms ease;
+}
+
+.era-card:hover .era-card-image img {
+  transform: scale(1.03);
+}
+
+.era-card-content {
+  padding: var(--space-lg);
+}
+
+.era-card-date {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-sandstone);
+  margin-bottom: var(--space-sm);
+}
+
+.era-card-name {
+  font-size: var(--text-xl);
+  margin-top: 0;
+  margin-bottom: var(--space-sm);
+  border: none;
+  padding: 0;
+}
+
+.era-card-description {
+  font-size: var(--text-sm);
+  color: var(--color-mersey);
+  line-height: 1.6;
+  margin-bottom: 0;
+}

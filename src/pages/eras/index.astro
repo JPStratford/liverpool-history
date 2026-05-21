@@ -1,14 +1,36 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-const pageTitle = "Eras";
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+
+const eras = await getCollection('eras');
+console.log('eras found:', eras.length);
+const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'eras'>) => a.data.order - b.data.order);
 ---
-<BaseLayout pageTitle={pageTitle}>
-  <h1>Explore by Era</h1>
-  <ul>
-    <li><a href="/eras/medieval/">Medieval (1207–1714)</a></li>
-    <li><a href="/eras/georgian/">Georgian (1714–1837)</a></li>
-    <li><a href="/eras/victorian/">Victorian (1837–1901)</a></li>
-    <li><a href="/eras/twentieth-century/">Twentieth Century (1901–1970)</a></li>
-    <li><a href="/eras/modern/">Modern (1970–present)</a></li>
-  </ul>
+
+<BaseLayout pageTitle="Eras">
+  <div class="page-header">
+    <h1>Explore by Era</h1>
+    <p class="subtitle">Five centuries of Liverpool's history</p>
+  </div>
+
+  <div class="eras-intro">
+    <p>Liverpool's history resists simple narratives. This site organises it into five broad eras — not to impose artificial boundaries on a continuous story, but to give readers a framework for navigation. Each era bleeds into the next, and many subjects span several periods. Where that is the case, articles are indexed across multiple eras so that nothing is lost in the categorisation.</p>
+  </div>
+
+  <div class="eras-grid">
+{sortedEras.map((era: CollectionEntry<'eras'>) => (      <a href={`/eras/${era.data.slug}`} class="era-card">
+        {era.data.heroImage.url && (
+          <div class="era-card-image">
+            <img src={era.data.heroImage.url} alt={era.data.heroImage.alt} />
+          </div>
+        )}
+        <div class="era-card-content">
+          <p class="era-card-date">{era.data.dateRange}</p>
+          <h2 class="era-card-name">{era.data.name}</h2>
+          <p class="era-card-description">{era.data.description}</p>
+        </div>
+      </a>
+    ))}
+  </div>
 </BaseLayout>
