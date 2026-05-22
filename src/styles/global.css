@@ -186,10 +186,9 @@ li {
 
 main {
   min-height: 70vh;
-  padding: 0 0 var(--space-xl) 0;
+  padding: 80px 0 var(--space-xl) 0;
   max-width: var(--max-width-wide);
   margin: 0 auto;
-  padding-top: 0;
 }
 
 .hero-image {
@@ -351,8 +350,6 @@ nav {
   margin-bottom: var(--space-xl);
   padding-bottom: var(--space-lg);
   border-bottom: 1px solid var(--color-border);
-  position: relative;
-  z-index: 1;
 }
 
 .article-header h1 {
@@ -375,18 +372,23 @@ nav {
   margin-bottom: 0;
 }
 
-.article-body {
-  position: relative;
-  z-index: 1;
-  margin-top: var(--space-xl);
+
+
+.leaflet-container *,
+.leaflet-container *::before,
+.leaflet-container *::after {
+  box-sizing: content-box;
+}
+.article-content .leaflet-container img {
+  margin: 0;
 }
 
-.article-body p {
+.article-content p {
   font-size: var(--text-base);
   line-height: 1.9;
 }
 
-.article-body h2 {
+.article-content h2 {
   font-size: var(--text-2xl);
   margin-top: var(--space-xl);
   margin-bottom: var(--space-md);
@@ -394,18 +396,18 @@ nav {
   border-top: 1px solid var(--color-border);
 }
 
-.article-body h3 {
+.article-content h3 {
   font-size: var(--text-xl);
   margin-top: var(--space-lg);
   margin-bottom: var(--space-sm);
 }
 
-.article-body img {
+.article-content img {
   margin: var(--space-xl) 0;
   border-radius: 2px;
 }
 
-.article-body img + em {
+.article-content img + em {
   display: block;
   font-size: var(--text-sm);
   color: var(--color-mersey);
@@ -421,12 +423,10 @@ nav {
   align-items: start;
   max-width: 1100px;
   margin: 0 auto;
-  padding-top: 100px;
 }
 
 .article-main {
   min-width: 0;
-  transform: translateZ(0);
 }
 
 .article-toc {
@@ -885,6 +885,7 @@ footer {
 .home-hero {
   width: 100vw;
   margin-left: calc(50% - 50vw);
+  margin-top: 80px;
   min-height: 90vh;
   background-color: var(--color-text);
   display: flex;
@@ -1158,3 +1159,4 @@ footer {
     max-width: 240px;
   }
 }
+

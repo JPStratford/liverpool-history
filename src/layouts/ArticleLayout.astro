@@ -10,15 +10,16 @@ const { frontmatter } = Astro.props;
   ogImage={frontmatter.heroImage?.url}
   ogType="article"
 >
-  {frontmatter.heroImage && (
-    <div class="hero-image">
-      <img src={frontmatter.heroImage.url} alt={frontmatter.heroImage.alt} />
-    </div>
-  )}
+  <!-- {frontmatter.heroImage && (
+    // <div class="hero-image">
+    //   <img src={frontmatter.heroImage.url} alt={frontmatter.heroImage.alt} />
+    // </div>
+  )} -->
 
-  <article class="article-container">
-    <div class="article-main">
-      <header class="article-header">
+<div style="padding-top: 100px;"></div>
+<article class="article-container">
+  <div class="article-main">
+     <div class="article-header">
         <h1>{frontmatter.title}</h1>
         <div class="article-meta">
           {frontmatter.eras.map((era: string) => (
@@ -34,7 +35,7 @@ const { frontmatter } = Astro.props;
         <p class="standfirst">{frontmatter.standfirst}</p>
       </header>
 
-      <div class="article-body" id="article-body">
+      <div class="article-content" id="article-content">
         <slot />
       </div>
     </div>
@@ -48,12 +49,12 @@ const { frontmatter } = Astro.props;
 </BaseLayout>
 
 <script>
-  const articleBody = document.getElementById('article-body');
+  const articleContent = document.getElementById('article-content');
   const tocNav = document.getElementById('toc-nav');
   const toc = document.getElementById('article-toc');
 
-  if (articleBody && tocNav && toc) {
-    const headings = articleBody.querySelectorAll('h2');
+  if (articleContent && tocNav && toc) {
+    const headings = articleContent.querySelectorAll('h2');
 
     if (headings.length >= 3) {
       toc.classList.add('toc-visible');

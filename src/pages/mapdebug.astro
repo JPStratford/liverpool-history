@@ -2,14 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MapMarker from '../components/MapMarker.astro';
 ---
+
 <BaseLayout pageTitle="Map Test 2">
-<article class="article-container">
-  <div class="article-main">
-    <div>
-      <div style="position: relative; z-index: 0;">
-        <MapMarker lat={53.401505} lng={-2.950500} zoom={18} />
-      </div>
-    </div>
+  <div style="position: relative; z-index: 0;">
+    <MapMarker lat={53.401505} lng={-2.950500} zoom={18} />
   </div>
-</article>
 </BaseLayout>
