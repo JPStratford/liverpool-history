@@ -10,11 +10,11 @@ const { frontmatter } = Astro.props;
   ogImage={frontmatter.heroImage?.url}
   ogType="article"
 >
-  <!-- {frontmatter.heroImage && (
-    // <div class="hero-image">
-    //   <img src={frontmatter.heroImage.url} alt={frontmatter.heroImage.alt} />
-    // </div>
-  )} -->
+  {frontmatter.heroImage && (
+    <div class="hero-image">
+      <img src={frontmatter.heroImage.url} alt={frontmatter.heroImage.alt} />
+    </div>
+  )}
 
 <div style="padding-top: 100px;"></div>
 <article class="article-container">
