@@ -1,0 +1,33 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  article: CollectionEntry<'articles'>;
+}
+
+const { article } = Astro.props;
+---
+
+<a href={`/articles/${article.id}`} class="article-card">
+  {article.data.heroImage && (
+    <div class="article-card-image">
+      <Image
+        src={article.data.heroImage.src}
+        alt={article.data.heroImage.alt}
+        width={740}
+        height={400}
+        style={article.data.heroImage.position ? `object-position: ${article.data.heroImage.position}` : ''}
+      />
+    </div>
+  )}
+  <div class="article-card-content">
+    <h3 class="article-card-title">{article.data.title}</h3>
+    <p class="article-card-standfirst">{article.data.standfirst}</p>
+    <div class="article-card-tags">
+      {article.data.topics.map((topic: string) => (
+        <span class="tag topic-tag">{topic}</span>
+      ))}
+    </div>
+  </div>
+</a>

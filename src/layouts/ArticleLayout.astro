@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { Image } from 'astro:assets';
 
 const { frontmatter } = Astro.props;
 ---
@@ -10,11 +11,17 @@ const { frontmatter } = Astro.props;
   ogImage={frontmatter.heroImage?.url}
   ogType="article"
 >
-  {frontmatter.heroImage && (
-    <div class="hero-image">
-      <img src={frontmatter.heroImage.url} alt={frontmatter.heroImage.alt} />
-    </div>
-  )}
+{frontmatter.heroImage && (
+  <div class="hero-image">
+    <Image
+      src={frontmatter.heroImage.src}
+      alt={frontmatter.heroImage.alt}
+      width={1920}
+      height={1080}
+      style={frontmatter.heroImage.position ? `object-position: ${frontmatter.heroImage.position}` : ''}
+    />
+  </div>
+)}
 
 <article class="article-container">
   <div class="article-main">
@@ -32,7 +39,7 @@ const { frontmatter } = Astro.props;
           ))}
         </div>
         <p class="standfirst">{frontmatter.standfirst}</p>
-      </header>
+      </div>
 
       <div class="article-content" id="article-content">
         <slot />

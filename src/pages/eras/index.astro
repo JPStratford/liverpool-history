@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 
 const eras = await getCollection('eras');
 const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'eras'>) => a.data.order - b.data.order);
@@ -10,7 +11,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 <BaseLayout pageTitle="Eras">
   <div class="page-header">
     <h1>Explore by Era</h1>
-    <p class="subtitle">EightIv centuries of Liverpool's history</p>
+    <p class="subtitle">Eight centuries of Liverpool's history</p>
   </div>
 
   <div class="eras-intro">
@@ -19,11 +20,11 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
   <div class="eras-grid">
 {sortedEras.map((era: CollectionEntry<'eras'>) => (      <a href={`/eras/${era.data.slug}`} class="era-card">
-        {era.data.heroImage.url && (
-          <div class="era-card-image">
-            <img src={era.data.heroImage.url} alt={era.data.heroImage.alt} />
-          </div>
-        )}
+          {era.data.heroImage && (
+            <div class="era-card-image">
+              <Image src={era.data.heroImage.src} alt={era.data.heroImage.alt} width={740} height={400} />
+            </div>
+          )}
         <div class="era-card-content">
           <p class="era-card-date">{era.data.dateRange}</p>
           <h2 class="era-card-name">{era.data.name}</h2>

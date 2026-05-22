@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import ArticleCard from '../../components/ArticleCard.astro';
 
 export async function getStaticPaths() {
   const eras = await getCollection('eras');
@@ -34,23 +35,8 @@ const eraArticles = allArticles.filter((article: CollectionEntry<'articles'>) =>
       <h2>Articles</h2>
       <div class="article-grid">
         {eraArticles.map((article: CollectionEntry<'articles'>) => (
-          <a href={`/articles/${article.id}`} class="article-card">
-            {article.data.heroImage && (
-              <div class="article-card-image">
-                <img src={article.data.heroImage.url} alt={article.data.heroImage.alt} />
-              </div>
-            )}
-            <div class="article-card-content">
-              <h3 class="article-card-title">{article.data.title}</h3>
-              <p class="article-card-standfirst">{article.data.standfirst}</p>
-              <div class="article-card-tags">
-                {article.data.topics.map((topic: string) => (
-                  <span class="tag topic-tag">{topic}</span>
-                ))}
-              </div>
-            </div>
-          </a>
-        ))}
+        <ArticleCard article={article} />
+))}
       </div>
     </div>
   ) : (

@@ -418,7 +418,7 @@ nav {
 
 .article-container {
   display: grid;
-  grid-template-columns: 1fr 220px;
+  grid-template-columns: 1fr 280px;
   gap: var(--space-2xl);
   align-items: start;
   max-width: 1100px;
@@ -457,11 +457,12 @@ nav {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  align-items: start;
 }
 
 .toc-link {
   font-family: var(--font-ui);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   color: var(--color-mersey);
   line-height: 1.4;
   transition: color var(--transition);
@@ -904,6 +905,7 @@ footer {
 
 .home-hero::after {
   content: '';
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%);
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -922,6 +924,7 @@ footer {
   letter-spacing: -0.02em;
   margin-bottom: var(--space-md);
   line-height: 1;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
 }
 
 .home-hero-subtitle {
@@ -1068,14 +1071,14 @@ footer {
 .about-content {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: var(--space-2xl);
+  gap: var(--space-xl);
   max-width: var(--max-width-wide);
   margin-top: var(--space-xl);
 }
 
 .about-portrait {
-  position: sticky;
-  top: 100px;
+  position: static;
+  /* top: 100px; Only need this if I set this to sticky and it follows the user as they scroll. */
   align-self: start;
 }
 
@@ -1171,6 +1174,7 @@ footer {
   .about-portrait {
     position: static;
     max-width: 240px;
+    margin: 0 auto;
   }
 }
 

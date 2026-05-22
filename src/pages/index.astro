@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import ArticleCard from '../components/ArticleCard.astro';
 
 const allArticles = await getCollection('articles');
 const featuredArticles = allArticles.filter((article: CollectionEntry<'articles'>) => 
@@ -19,7 +21,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 <BaseLayout pageTitle="Liverpool History" transparentHeader={true}>
 <div class="home-hero">    <div class="home-hero-content">
       <h1 class="home-hero-title">rpool.live</h1>
-      <p class="home-hero-subtitle">Five centuries of the world's most consequential port city.</p>
+      <p class="home-hero-subtitle">Eight centuries of the world's most consequential port city.</p>
       <a href="/eras/" class="home-hero-cta">Explore the history</a>
     </div>
   </div>
@@ -33,11 +35,11 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
     <div class="eras-grid">
       {sortedEras.map((era: CollectionEntry<'eras'>) => (
         <a href={`/eras/${era.data.slug}`} class="era-card">
-          {era.data.heroImage.url && (
-            <div class="era-card-image">
-              <img src={era.data.heroImage.url} alt={era.data.heroImage.alt} />
-            </div>
-          )}
+        {era.data.heroImage && (
+          <div class="era-card-image">
+            <Image src={era.data.heroImage.src} alt={era.data.heroImage.alt} width={740} height={400} />
+          </div>
+        )}
           <div class="era-card-content">
             <p class="era-card-date">{era.data.dateRange}</p>
             <h3 class="era-card-name">{era.data.name}</h3>
@@ -53,17 +55,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
       <h2 class="section-heading">Recent Articles</h2>
       <div class="article-grid">
         {recentArticles.map((article: CollectionEntry<'articles'>) => (
-          <a href={`/articles/${article.id}`} class="article-card">
-            {article.data.heroImage && (
-              <div class="article-card-image">
-                <img src={article.data.heroImage.url} alt={article.data.heroImage.alt} />
-              </div>
-            )}
-            <div class="article-card-content">
-              <h3 class="article-card-title">{article.data.title}</h3>
-              <p class="article-card-standfirst">{article.data.standfirst}</p>
-            </div>
-          </a>
+          <ArticleCard article={article} />
         ))}
       </div>
     </section>
