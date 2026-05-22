@@ -889,6 +889,10 @@ footer {
   margin-top: -80px;
   min-height: 90vh;
   background-color: var(--color-text);
+  background-size: cover;
+  background-image: url('/images/liverpool-home-hero.jpg');
+  background-position: 36% center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -898,10 +902,16 @@ footer {
   overflow: hidden;
 }
 
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .home-hero-content {
   position: relative;
-  z-index: 1;
-  max-width: 800px;
+  z-index: 2;
 }
 
 .home-hero-title {
@@ -935,12 +945,13 @@ footer {
   border: 1px solid rgba(245, 240, 232, 0.4);
   padding: var(--space-md) var(--space-xl);
   transition: all var(--transition);
+  background-color: rgba(28, 24, 20, 0.4);
 }
 
 .home-hero-cta:hover {
   color: var(--color-background);
   border-color: var(--color-sandstone);
-  background-color: rgba(196, 149, 106, 0.15);
+  background-color: rgba(196, 149, 106, 0.3);
 }
 
 .home-intro {
@@ -1144,6 +1155,8 @@ footer {
 
   .home-hero {
     margin-left: calc(50% - 50vw);
+    background-image: url('/images/liverpool-home-hero-mobile.jpg');
+    background-position: center center;
   }
 
   .footer-inner {
