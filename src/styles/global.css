@@ -7,6 +7,7 @@
   --color-background: #F5F0E8;
   --color-text: #1C1814;
   --color-sandstone: #92633F;
+  --color-sandstone-light: #C4956A;
   --color-mersey: #4A5568;
   --color-green: #2D4A3E;
   --color-border: #E8E0D0;
@@ -660,7 +661,7 @@ footer {
 .footer-tagline {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
-  color: var(--color-sandstone);
+  color: var(--color-sandstone-light);
   line-height: 1.6;
 }
 
@@ -670,7 +671,7 @@ footer {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-sandstone);
+  color: var(--color-sandstone-light);
   margin-bottom: var(--space-md);
 }
 
