@@ -6,7 +6,7 @@
   /* Colours */
   --color-background: #F5F0E8;
   --color-text: #1C1814;
-  --color-sandstone: #C4956A;
+  --color-sandstone: #92633F;
   --color-mersey: #4A5568;
   --color-green: #2D4A3E;
   --color-border: #E8E0D0;
@@ -933,7 +933,6 @@ footer {
   font-family: var(--font-body);
   font-size: clamp(1.1rem, 2.5vw, 1.5rem);
   color: var(--color-background);
-  /* color: var(--color-sandstone); looks nice but not legible*/
   font-style: italic;
   margin-bottom: var(--space-xl);
   line-height: 1.5;
