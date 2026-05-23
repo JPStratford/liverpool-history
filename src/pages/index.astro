@@ -24,9 +24,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     <h1 class="home-hero-title" id="hero-title-outer" style="position:relative; display:inline-block;">
       <span id="hero-viewport" style="display:inline-block; overflow:hidden; position:relative; vertical-align:top;">
-        <span id="hero-ticker" style="display:inline-flex; align-items:baseline; white-space:nowrap; position:absolute; font-family:inherit; font-size:inherit; font-weight:inherit; letter-spacing:inherit; line-height:inherit; color:inherit;">
-          <span>L</span><span>i</span><span>v</span><span>e</span><span>r</span><span>p</span><span>o</span><span>o</span><span>l</span><span id="hero-dot">.</span><span>l</span><span>i</span><span>v</span><span>e</span>
-        </span>
+        <span id="hero-ticker" style="display:inline-block; white-space:nowrap; position:absolute; font-family:inherit; font-size:inherit; font-weight:inherit; letter-spacing:inherit; line-height:inherit; color:inherit;">Liverpool<span id="hero-dot">.</span>live</span>
       </span>
     </h1>
 
@@ -103,6 +101,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
       transparent 100%
     );
   }
+
 </style>
 
 <script>
@@ -114,19 +113,32 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     if (!outer || !viewport || !ticker || !dot) return;
 
-    const chars  = Array.from(ticker.querySelectorAll('span')) as HTMLElement[];
-    const widths = chars.map(c => c.getBoundingClientRect().width);
+    const cs = getComputedStyle(outer);
+    const measure = document.createElement('span');
+    measure.style.cssText = `position:absolute; visibility:hidden; white-space:nowrap; font-family:${cs.fontFamily}; font-size:${cs.fontSize}; font-weight:${cs.fontWeight}; letter-spacing:${cs.letterSpacing}; line-height:${cs.lineHeight};`;
 
-    const liverpoolWidth = widths.slice(0, 9).reduce((a, b) => a + b, 0);
-    const liverWidth     = widths.slice(0, 4).reduce((a, b) => a + b, 0);
-    const charHeight     = chars[0].getBoundingClientRect().height;
+    document.body.appendChild(measure);
 
-    const viewportWidth = liverpoolWidth + 12;
+    measure.textContent = 'Liverpool';
+    const liverpoolWidth = measure.getBoundingClientRect().width;
+    const naturalHeight = measure.getBoundingClientRect().height;
+    console.log('naturalHeight:', naturalHeight);
+
+    measure.textContent = 'Liver';
+    const liverWidth = measure.getBoundingClientRect().width;
+
+    document.body.removeChild(measure);
+
+    const charHeight = ticker.getBoundingClientRect().height;
+
+const viewportWidth = liverpoolWidth + 12;
     viewport.style.width  = viewportWidth + 'px';
-    viewport.style.height = charHeight + 'px';
+    viewport.style.height = (charHeight * 1.2) + 'px';
     outer.style.width     = viewportWidth + 'px';
+    outer.style.height    = charHeight + 'px';
+    outer.style.overflow  = 'visible';
 
-    ticker.style.left      = `-${liverWidth - 6}px`;
+    ticker.style.left      = `-${liverWidth - 2.2}px`;
     ticker.style.transform = 'translateX(0)';
 
     setTimeout(() => {
@@ -138,6 +150,17 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
       setTimeout(() => {
         dot.style.opacity = '0';
+
+        // --- SWAP BLOCK START (comment out to disable swap) ---
+setTimeout(() => {
+          outer.innerHTML = 'Liverpool';
+          outer.style.textAlign = 'left';
+          outer.style.marginLeft = '4.4px';
+          // outer.style.marginLeft = '-7.61px'; this worked visually
+
+        }, 600);
+        // --- SWAP BLOCK END ---
+
       }, duration * 0.78 + 500);
 
     }, 500);

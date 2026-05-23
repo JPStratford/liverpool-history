@@ -1194,4 +1194,8 @@ footer {
   header:not(.scrolled) .nav-links a {
     color: var(--color-text);
   }
+
+   .home-hero-title {
+    font-size: 72px;
+  }
 }
