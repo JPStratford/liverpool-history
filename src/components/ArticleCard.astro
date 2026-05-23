@@ -28,6 +28,9 @@ const { article } = Astro.props;
       {article.data.topics.map((topic: string) => (
         <span class="tag topic-tag">{topic}</span>
       ))}
+      {article.data.places.map((place: string) => (
+        <span class="tag place-tag">{place}</span>
+      ))}
     </div>
   </div>
 </a>

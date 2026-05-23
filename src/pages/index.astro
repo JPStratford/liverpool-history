@@ -19,12 +19,21 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 ---
 
 <BaseLayout pageTitle="Liverpool History" transparentHeader={true}>
-<div class="home-hero">    <div class="home-hero-content">
-      <h1 class="home-hero-title">rpool.live</h1>
-      <p class="home-hero-subtitle">Eight centuries of the world's most consequential port city.</p>
-      <a href="/eras/" class="home-hero-cta">Explore the history</a>
-    </div>
+<div class="home-hero">
+  <div class="home-hero-content">
+
+    <h1 class="home-hero-title" id="hero-title-outer" style="position:relative; display:inline-block;">
+      <span id="hero-viewport" style="display:inline-block; overflow:hidden; position:relative; vertical-align:top;">
+        <span id="hero-ticker" style="display:inline-flex; align-items:baseline; white-space:nowrap; position:absolute; font-family:inherit; font-size:inherit; font-weight:inherit; letter-spacing:inherit; line-height:inherit; color:inherit;">
+          <span>L</span><span>i</span><span>v</span><span>e</span><span>r</span><span>p</span><span>o</span><span>o</span><span>l</span><span id="hero-dot">.</span><span>l</span><span>i</span><span>v</span><span>e</span>
+        </span>
+      </span>
+    </h1>
+
+    <p class="home-hero-subtitle">Eight centuries of the world's most consequential port city.</p>
+    <a href="/eras/" class="home-hero-cta">Explore the history</a>
   </div>
+</div>
 
   <div class="home-intro container">
     <p>Liverpool's history is one of extraordinary ambition, moral complexity, and fierce civic pride. This site is a growing reference archive — quality-first articles, interactive maps, and original photography exploring the city across five centuries.</p>
@@ -72,3 +81,65 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
   </section>
 
 </BaseLayout>
+
+<style>
+  #hero-dot {
+    transition: opacity 0.6s ease;
+  }
+
+  #hero-viewport {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0px,
+      black 8px,
+      black calc(100% - 8px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0px,
+      black 8px,
+      black calc(100% - 8px),
+      transparent 100%
+    );
+  }
+</style>
+
+<script>
+  document.fonts.ready.then(function () {
+    const outer    = document.getElementById('hero-title-outer') as HTMLElement;
+    const viewport = document.getElementById('hero-viewport') as HTMLElement;
+    const ticker   = document.getElementById('hero-ticker') as HTMLElement;
+    const dot      = document.getElementById('hero-dot') as HTMLElement;
+
+    if (!outer || !viewport || !ticker || !dot) return;
+
+    const chars  = Array.from(ticker.querySelectorAll('span')) as HTMLElement[];
+    const widths = chars.map(c => c.getBoundingClientRect().width);
+
+    const liverpoolWidth = widths.slice(0, 9).reduce((a, b) => a + b, 0);
+    const liverWidth     = widths.slice(0, 4).reduce((a, b) => a + b, 0);
+    const charHeight     = chars[0].getBoundingClientRect().height;
+
+    const viewportWidth = liverpoolWidth + 12;
+    viewport.style.width  = viewportWidth + 'px';
+    viewport.style.height = charHeight + 'px';
+    outer.style.width     = viewportWidth + 'px';
+
+    ticker.style.left      = `-${liverWidth - 6}px`;
+    ticker.style.transform = 'translateX(0)';
+
+    setTimeout(() => {
+      const duration = 3200;
+      const easing   = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+      ticker.style.transition = `transform ${duration}ms ${easing}`;
+      ticker.style.transform  = `translateX(${liverWidth}px)`;
+
+      setTimeout(() => {
+        dot.style.opacity = '0';
+      }, duration * 0.78 + 500);
+
+    }, 500);
+  });
+</script>

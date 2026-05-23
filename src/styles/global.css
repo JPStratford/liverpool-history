@@ -930,11 +930,14 @@ footer {
 .home-hero-subtitle {
   font-family: var(--font-body);
   font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-  color: var(--color-sandstone);
+  color: var(--color-background);
+  /* color: var(--color-sandstone); looks nice but not legible*/
   font-style: italic;
   margin-bottom: var(--space-xl);
   line-height: 1.5;
   max-width: none;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+
 }
 
 .home-hero-cta {
@@ -1158,7 +1161,8 @@ footer {
 
   .home-hero {
     margin-left: calc(50% - 50vw);
-    background-image: url('/images/liverpool-home-hero-mobile.jpg');
+    background-image: url('/images/liverpool-home-hero-mobile.avif');
+    background-size: cover;
     background-position: center center;
   }
 
@@ -1176,5 +1180,18 @@ footer {
     max-width: 240px;
     margin: 0 auto;
   }
-}
 
+  header.scrolled {
+    background-color: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  header .nav-logo,
+  header .nav-toggle {
+    color: var(--color-text);
+  }
+
+  header:not(.scrolled) .nav-links a {
+    color: var(--color-text);
+  }
+}
