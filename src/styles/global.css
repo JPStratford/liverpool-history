@@ -353,6 +353,8 @@ nav {
   margin-bottom: var(--space-md);
   padding-bottom: var(--space-md);
   border-bottom: 1px solid var(--color-border);
+  text-wrap: balance;
+
 }
 
 .article-header h1 {
@@ -389,6 +391,7 @@ nav {
 .article-content p {
   font-size: var(--text-base);
   line-height: 1.9;
+  text-wrap: pretty;
 }
 
 .article-content h2 {
@@ -1031,6 +1034,17 @@ footer {
 /* ================================
    TOPICS & PLACES PAGES
 ================================ */
+
+.topics-intro {
+  max-width: var(--max-width-content);
+  margin-bottom: var(--space-xl);
+}
+
+.topics-intro p {
+  font-size: var(--text-lg);
+  line-height: 1.8;
+  color: var(--color-mersey);
+}
 
 .topics-grid {
   display: flex;

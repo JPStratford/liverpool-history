@@ -16,6 +16,10 @@ const allTopics = [...new Set(publishedArticles.map((article: CollectionEntry<'a
     <p class="subtitle">Browse articles by theme</p>
   </div>
 
+      <div class="topics-intro">
+        <p>A city of firsts, few provincial cities have impacted the modern world so dramatically in so many ways as Liverpool has. The fields of maritime innovation, the railways, grand civic projects, medical advancement, and politics all have stories of worldwide significance that took place in this city.</p>
+      </div>
+
   {allTopics.length > 0 ? (
     <div class="topics-grid">
       {allTopics.map((topic: string) => (

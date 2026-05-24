@@ -16,6 +16,9 @@ const allPlaces = [...new Set(publishedArticles.map((article: CollectionEntry<'a
     <p class="subtitle">Browse articles by location</p>
   </div>
 
+    <div class="topics-intro">
+    <p>This site includes places that have a direct bearing on the story of Liverpool. It includes places on both sides of the Mersey, taking in Birkenhead and New Brighton in addition to the city's own boroughs.</p>
+    </div>
   {allPlaces.length > 0 ? (
     <div class="topics-grid">
       {allPlaces.map((place: string) => (
