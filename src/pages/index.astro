@@ -22,11 +22,14 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 <div class="home-hero">
   <div class="home-hero-content">
 
-    <h1 class="home-hero-title" id="hero-title-outer" style="position:relative; display:inline-block;">
-      <span id="hero-viewport" style="display:inline-block; overflow:hidden; position:relative; vertical-align:top;">
-        <span id="hero-ticker" style="display:inline-block; white-space:nowrap; position:absolute; font-family:inherit; font-size:inherit; font-weight:inherit; letter-spacing:inherit; line-height:inherit; color:inherit;">Liverpool<span id="hero-dot">.</span>live</span>
-      </span>
-    </h1>
+    <div id="hero-title-wrap" style="position:relative; display:inline-block;">
+      <h1 class="home-hero-title" id="hero-title-outer" style="position:relative; display:inline-block;">
+        <span id="hero-viewport" style="display:inline-block; overflow:hidden; position:relative; vertical-align:top;">
+          <span id="hero-ticker" style="display:inline-block; white-space:nowrap; position:absolute; font-family:inherit; font-size:inherit; font-weight:inherit; letter-spacing:inherit; line-height:inherit; color:inherit;">Liverpool<span id="hero-dot">.</span>live</span>
+        </span>
+      </h1>
+      <div id="hero-timeline" style="position:absolute; left:0; pointer-events:none;"></div>
+    </div>
 
     <p class="home-hero-subtitle">Eight centuries of the world's most consequential port city.</p>
     <a href="/eras/" class="home-hero-cta">Explore the history</a>
@@ -131,7 +134,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     const charHeight = ticker.getBoundingClientRect().height;
 
-const viewportWidth = liverpoolWidth + 12;
+    const viewportWidth = liverpoolWidth + 12;
     viewport.style.width  = viewportWidth + 'px';
     viewport.style.height = (charHeight * 1.2) + 'px';
     outer.style.width     = viewportWidth + 'px';
@@ -141,6 +144,52 @@ const viewportWidth = liverpoolWidth + 12;
     ticker.style.left      = `-${liverWidth - 2.2}px`;
     ticker.style.transform = 'translateX(0)';
 
+    // ---- TIMELINE SETUP ----
+    const timelineEl = document.getElementById('hero-timeline') as HTMLElement;
+    timelineEl.classList.add('hero-timeline');    const foundedYear = 1207;
+    const currentYear = new Date().getFullYear();
+
+    // Label size is 14% of the h1 font size — adjust this multiplier to taste
+    const labelSize  = parseFloat(cs.fontSize) * 0.14;
+    const lineGap    = labelSize * 1.6;   // gap between h1 baseline and the timeline line
+    const tickHeight = labelSize * 0.9;
+
+    timelineEl.style.top    = (charHeight + lineGap) + 'px';
+    timelineEl.style.width  = liverpoolWidth + 'px';
+    timelineEl.style.height = (tickHeight + labelSize * 2.2) + 'px';
+
+    // Add extra bottom padding to hero title to accommodate timeline and labels
+    const wrap = document.getElementById('hero-title-wrap') as HTMLElement;
+    wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
+
+    // Horizontal line
+    const line = document.createElement('div');
+    line.style.cssText = `position:absolute; top:0; left:0; width:0; height:1px; background:currentColor; opacity:0.35;`;
+    timelineEl.appendChild(line);
+
+    // Start tick at left edge — revealed late
+    const startTick = document.createElement('div');
+    startTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:0; transition:opacity 400ms ease;`;
+    timelineEl.appendChild(startTick);
+
+    // End tick — tracks right edge of growing line
+    const endTick = document.createElement('div');
+    endTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:0.35;`;
+    timelineEl.appendChild(endTick);
+
+    // Founded year label: 1207, fixed at left, revealed late
+    const startLabel = document.createElement('span');
+    startLabel.textContent = String(foundedYear);
+    startLabel.style.cssText = `position:absolute; top:${tickHeight + labelSize * 0.35}px; left:0; font-family:${cs.fontFamily}; font-size:${labelSize}px; font-weight:400; letter-spacing:0.04em; opacity:0; color:inherit; white-space:nowrap; transition:opacity 400ms ease;`;
+    timelineEl.appendChild(startLabel);
+
+    // Current year label — tracks right edge, centred on tick
+    const endLabel = document.createElement('span');
+    endLabel.textContent = String(foundedYear); // starts at 1207, counts up
+    endLabel.style.cssText = `position:absolute; top:${tickHeight + labelSize * 0.35}px; left:0; font-family:${cs.fontFamily}; font-size:${labelSize}px; font-weight:400; letter-spacing:0.04em; opacity:1; color:inherit; white-space:nowrap; transform:translateX(-50%);`;
+    timelineEl.appendChild(endLabel);
+    // ---- END TIMELINE SETUP ----
+
     setTimeout(() => {
       const duration = 3200;
       const easing   = 'cubic-bezier(0.4, 0, 0.2, 1)';
@@ -148,16 +197,56 @@ const viewportWidth = liverpoolWidth + 12;
       ticker.style.transition = `transform ${duration}ms ${easing}`;
       ticker.style.transform  = `translateX(${liverWidth}px)`;
 
+          // ---- TIMELINE ANIMATION ----
+      const startTime  = performance.now();
+      const revealAt   = 0.80;
+      let labelFadedIn = false;
+
+      // Line and end tick grow via CSS transition, matching ticker exactly
+      line.style.transition     = `width ${duration}ms ${easing}`;
+      endTick.style.transition  = `left ${duration}ms ${easing}`;
+      endLabel.style.transition = `left ${duration}ms ${easing}`;
+
+      // Trigger in next frame so transition is active before values change
+      requestAnimationFrame(() => {
+        line.style.width    = liverpoolWidth + 'px';
+        endTick.style.left  = (liverpoolWidth - 1) + 'px';
+        endLabel.style.left = liverpoolWidth + 'px';
+      });
+
+      // RAF loop only drives the year counter
+      function tickTimeline(now: number) {
+        const elapsed  = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        const year = Math.round(foundedYear + (currentYear - foundedYear) * progress);
+        endLabel.textContent = String(year);
+
+        if (!labelFadedIn && progress >= revealAt) {
+          labelFadedIn = true;
+          startLabel.style.opacity = '1';
+          startTick.style.opacity  = '0.35';
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(tickTimeline);
+        } else {
+          endLabel.textContent = String(currentYear);
+        }
+      }
+
+      requestAnimationFrame(tickTimeline);
+      // ---- END TIMELINE ANIMATION ----
       setTimeout(() => {
         dot.style.opacity = '0';
 
         // --- SWAP BLOCK START (comment out to disable swap) ---
-setTimeout(() => {
+        setTimeout(() => {
           outer.innerHTML = 'Liverpool';
           outer.style.textAlign = 'left';
           outer.style.marginLeft = '4.4px';
+          timelineEl.style.left  = '2.2px';
           // outer.style.marginLeft = '-7.61px'; this worked visually
-
         }, 600);
         // --- SWAP BLOCK END ---
 

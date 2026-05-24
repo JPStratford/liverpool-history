@@ -1033,6 +1033,12 @@ footer {
   border-color: var(--color-text);
 }
 
+.home-hero .hero-timeline {
+  /* color: var(--color-sandstone-light); */
+  color: white;
+
+}
+
 /* ================================
    TOPICS & PLACES PAGES
 ================================ */
