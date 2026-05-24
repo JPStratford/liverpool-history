@@ -85,6 +85,14 @@ a:hover {
   color: var(--color-mersey);
 }
 
+.map-card-tag {
+  color: var(--color-background);
+}
+
+.map-card-tag:hover {
+  color: var(--color-background);
+}
+
 /* ================================
    TYPOGRAPHY
 ================================ */
@@ -1034,9 +1042,8 @@ footer {
 }
 
 .home-hero .hero-timeline {
-  /* color: var(--color-sandstone-light); */
   color: white;
-
+  --timeline-opacity: 1;
 }
 
 /* ================================

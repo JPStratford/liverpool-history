@@ -56,7 +56,7 @@ const mapId = `map-${Math.random().toString(36).slice(2, 9)}`;
     container.__mapInitialised = true;
 
     const map = L.map(container, { scrollWheelZoom: false }).setView([lat, lng], zoom);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(map);

@@ -156,19 +156,20 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
     const lineGap    = labelSize * 1.6;
     const tickHeight = labelSize * 0.9;
 
+    // TIMELINE_OFFSET: change this single constant to adjust the left edge of the timeline
+    const timelineOffset = 4.4;
+
     timelineEl.style.top    = (charHeight + lineGap) + 'px';
-    timelineEl.style.left   = '2.2px';
-    timelineEl.style.width  = (liverpoolWidth - 2.2) + 'px';
+    timelineEl.style.left   = timelineOffset + 'px';
+    timelineEl.style.width  = (liverpoolWidth - timelineOffset) + 'px';
     timelineEl.style.height = (tickHeight + labelSize * 2.2) + 'px';
 
-    // Set wrap width once here and never change it — prevents text-align:center
-    // from recentring the block when inner dimensions change at swap time
     wrap.style.width         = viewportWidth + 'px';
     wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
 
     // Horizontal line
     const line = document.createElement('div');
-    line.style.cssText = `position:absolute; top:0; left:0; width:0; height:1px; background:currentColor; opacity:0.35;`;
+    line.style.cssText = `position:absolute; top:0; left:0; width:0; height:1px; background:currentColor; opacity:var(--timeline-opacity)`;
     timelineEl.appendChild(line);
 
     // Start tick at left edge — revealed late
@@ -178,7 +179,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     // End tick — tracks right edge of growing line
     const endTick = document.createElement('div');
-    endTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:0.35;`;
+    endTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:var(--timeline-opacity)`;
     timelineEl.appendChild(endTick);
 
     // Founded year label: 1207, fixed at left, revealed late
@@ -211,9 +212,9 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
       endLabel.style.transition = `left ${duration}ms ${easing}`;
 
       requestAnimationFrame(() => {
-        line.style.width    = (liverpoolWidth - 2.2) + 'px';
-        endTick.style.left  = (liverpoolWidth - 2.2 - 1) + 'px';
-        endLabel.style.left = (liverpoolWidth - 2.2) + 'px';
+        line.style.width    = (liverpoolWidth - timelineOffset) + 'px';
+        endTick.style.left  = (liverpoolWidth - timelineOffset - 1) + 'px';
+        endLabel.style.left = (liverpoolWidth - timelineOffset) + 'px';
       });
 
       function tickTimeline(now: number) {
@@ -226,7 +227,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
         if (!labelFadedIn && progress >= revealAt) {
           labelFadedIn = true;
           startLabel.style.opacity = '1';
-          startTick.style.opacity  = '0.35';
+          startTick.style.opacity = 'var(--timeline-opacity)'
         }
 
         if (progress < 1) {
@@ -255,8 +256,8 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
           outer.style.height     = '';
           outer.style.overflow   = '';
           outer.style.marginLeft = '2.2px';
-          timelineEl.style.left  = '2.2px';
-          timelineEl.style.width = (liverpoolWidth - 2.2) + 'px';
+          timelineEl.style.left  = timelineOffset + 'px';
+          timelineEl.style.width = (liverpoolWidth - timelineOffset) + 'px';
           wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
 
           swapComplete = true;
@@ -279,11 +280,11 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
           const newCharHeight = outer.getBoundingClientRect().height;
           timelineEl.style.top     = (newCharHeight + lineGap2) + 'px';
-          timelineEl.style.left    = '2.2px';
-          timelineEl.style.width   = (newLiverpoolWidth - 2.2) + 'px';
-          line.style.width         = (newLiverpoolWidth - 2.2) + 'px';
-          endTick.style.left       = (newLiverpoolWidth - 2.2 - 1) + 'px';
-          endLabel.style.left      = (newLiverpoolWidth - 2.2) + 'px';
+          timelineEl.style.left    = timelineOffset + 'px';
+          timelineEl.style.width   = (newLiverpoolWidth - timelineOffset) + 'px';
+          line.style.width         = (newLiverpoolWidth - timelineOffset) + 'px';
+          endTick.style.left       = (newLiverpoolWidth - timelineOffset - 1) + 'px';
+          endLabel.style.left      = (newLiverpoolWidth - timelineOffset) + 'px';
           wrap.style.paddingBottom = (lineGap2 + tickHeight2 + labelSize2 * 2.2) + 'px';
           wrap.style.width         = (newLiverpoolWidth + 12) + 'px';
           outer.style.marginLeft   = '2.2px';

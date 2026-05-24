@@ -34,6 +34,10 @@ const articles = defineCollection({
     }).optional(),
     featured: z.boolean().default(false),
     draft: z.boolean().default(true),
+    coordinates: z.object({
+      lat: z.number(),
+      lng: z.number(),
+    }).optional(),
   }),
 });
 
