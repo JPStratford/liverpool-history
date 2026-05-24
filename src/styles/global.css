@@ -857,6 +857,7 @@ footer {
 
 .article-card-content {
   padding: var(--space-md) var(--space-lg);
+  text-wrap: pretty;
 }
 
 .article-card-title {
@@ -865,6 +866,7 @@ footer {
   margin-bottom: var(--space-sm);
   border: none;
   padding: 0;
+  text-wrap: balance;
 }
 
 .article-card-standfirst {
