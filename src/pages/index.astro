@@ -124,7 +124,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     measure.textContent = 'Liverpool';
     const liverpoolWidth = measure.getBoundingClientRect().width;
-    const naturalHeight = measure.getBoundingClientRect().height;
+    const naturalHeight  = measure.getBoundingClientRect().height;
     console.log('naturalHeight:', naturalHeight);
 
     measure.textContent = 'Liver';
@@ -132,9 +132,9 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     document.body.removeChild(measure);
 
-    const charHeight = ticker.getBoundingClientRect().height;
-
+    const charHeight    = ticker.getBoundingClientRect().height;
     const viewportWidth = liverpoolWidth + 12;
+
     viewport.style.width  = viewportWidth + 'px';
     viewport.style.height = (charHeight * 1.2) + 'px';
     outer.style.width     = viewportWidth + 'px';
@@ -146,20 +146,24 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     // ---- TIMELINE SETUP ----
     const timelineEl = document.getElementById('hero-timeline') as HTMLElement;
-    timelineEl.classList.add('hero-timeline');    const foundedYear = 1207;
+    const wrap       = document.getElementById('hero-title-wrap') as HTMLElement;
+    timelineEl.classList.add('hero-timeline');
+
+    const foundedYear = 1207;
     const currentYear = new Date().getFullYear();
 
-    // Label size is 14% of the h1 font size — adjust this multiplier to taste
     const labelSize  = parseFloat(cs.fontSize) * 0.14;
-    const lineGap    = labelSize * 1.6;   // gap between h1 baseline and the timeline line
+    const lineGap    = labelSize * 1.6;
     const tickHeight = labelSize * 0.9;
 
     timelineEl.style.top    = (charHeight + lineGap) + 'px';
-    timelineEl.style.width  = liverpoolWidth + 'px';
+    timelineEl.style.left   = '2.2px';
+    timelineEl.style.width  = (liverpoolWidth - 2.2) + 'px';
     timelineEl.style.height = (tickHeight + labelSize * 2.2) + 'px';
 
-    // Add extra bottom padding to hero title to accommodate timeline and labels
-    const wrap = document.getElementById('hero-title-wrap') as HTMLElement;
+    // Set wrap width once here and never change it — prevents text-align:center
+    // from recentring the block when inner dimensions change at swap time
+    wrap.style.width         = viewportWidth + 'px';
     wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
 
     // Horizontal line
@@ -185,7 +189,7 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
     // Current year label — tracks right edge, centred on tick
     const endLabel = document.createElement('span');
-    endLabel.textContent = String(foundedYear); // starts at 1207, counts up
+    endLabel.textContent = String(foundedYear);
     endLabel.style.cssText = `position:absolute; top:${tickHeight + labelSize * 0.35}px; left:0; font-family:${cs.fontFamily}; font-size:${labelSize}px; font-weight:400; letter-spacing:0.04em; opacity:1; color:inherit; white-space:nowrap; transform:translateX(-50%);`;
     timelineEl.appendChild(endLabel);
     // ---- END TIMELINE SETUP ----
@@ -197,24 +201,21 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
       ticker.style.transition = `transform ${duration}ms ${easing}`;
       ticker.style.transform  = `translateX(${liverWidth}px)`;
 
-          // ---- TIMELINE ANIMATION ----
+      // ---- TIMELINE ANIMATION ----
       const startTime  = performance.now();
       const revealAt   = 0.80;
       let labelFadedIn = false;
 
-      // Line and end tick grow via CSS transition, matching ticker exactly
       line.style.transition     = `width ${duration}ms ${easing}`;
       endTick.style.transition  = `left ${duration}ms ${easing}`;
       endLabel.style.transition = `left ${duration}ms ${easing}`;
 
-      // Trigger in next frame so transition is active before values change
       requestAnimationFrame(() => {
-        line.style.width    = liverpoolWidth + 'px';
-        endTick.style.left  = (liverpoolWidth - 1) + 'px';
-        endLabel.style.left = liverpoolWidth + 'px';
+        line.style.width    = (liverpoolWidth - 2.2) + 'px';
+        endTick.style.left  = (liverpoolWidth - 2.2 - 1) + 'px';
+        endLabel.style.left = (liverpoolWidth - 2.2) + 'px';
       });
 
-      // RAF loop only drives the year counter
       function tickTimeline(now: number) {
         const elapsed  = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -237,17 +238,56 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 
       requestAnimationFrame(tickTimeline);
       // ---- END TIMELINE ANIMATION ----
+
       setTimeout(() => {
         dot.style.opacity = '0';
 
         // --- SWAP BLOCK START (comment out to disable swap) ---
+        let swapComplete = false;
+
         setTimeout(() => {
-          outer.innerHTML = 'Liverpool';
-          outer.style.textAlign = 'left';
-          outer.style.marginLeft = '4.4px';
+          line.style.transition     = 'none';
+          endTick.style.transition  = 'none';
+          endLabel.style.transition = 'none';
+
+          outer.innerHTML        = 'Liverpool';
+          outer.style.textAlign  = 'left';
+          outer.style.height     = '';
+          outer.style.overflow   = '';
+          outer.style.marginLeft = '2.2px';
           timelineEl.style.left  = '2.2px';
-          // outer.style.marginLeft = '-7.61px'; this worked visually
+          timelineEl.style.width = (liverpoolWidth - 2.2) + 'px';
+          wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
+
+          swapComplete = true;
         }, 600);
+
+        window.addEventListener('resize', () => {
+          if (!swapComplete) return;
+
+          const cs2         = getComputedStyle(outer);
+          const labelSize2  = parseFloat(cs2.fontSize) * 0.14;
+          const lineGap2    = labelSize2 * 1.6;
+          const tickHeight2 = labelSize2 * 0.9;
+
+          const measure2 = document.createElement('span');
+          measure2.style.cssText = `position:absolute; visibility:hidden; white-space:nowrap; font-family:${cs2.fontFamily}; font-size:${cs2.fontSize}; font-weight:${cs2.fontWeight}; letter-spacing:${cs2.letterSpacing}; line-height:${cs2.lineHeight};`;
+          document.body.appendChild(measure2);
+          measure2.textContent = 'Liverpool';
+          const newLiverpoolWidth = measure2.getBoundingClientRect().width;
+          document.body.removeChild(measure2);
+
+          const newCharHeight = outer.getBoundingClientRect().height;
+          timelineEl.style.top     = (newCharHeight + lineGap2) + 'px';
+          timelineEl.style.left    = '2.2px';
+          timelineEl.style.width   = (newLiverpoolWidth - 2.2) + 'px';
+          line.style.width         = (newLiverpoolWidth - 2.2) + 'px';
+          endTick.style.left       = (newLiverpoolWidth - 2.2 - 1) + 'px';
+          endLabel.style.left      = (newLiverpoolWidth - 2.2) + 'px';
+          wrap.style.paddingBottom = (lineGap2 + tickHeight2 + labelSize2 * 2.2) + 'px';
+          wrap.style.width         = (newLiverpoolWidth + 12) + 'px';
+          outer.style.marginLeft   = '2.2px';
+        });
         // --- SWAP BLOCK END ---
 
       }, duration * 0.78 + 500);
