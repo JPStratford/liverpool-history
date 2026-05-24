@@ -90,7 +90,6 @@ const pins = mappableArticles.map((article: CollectionEntry<'articles'>) => ({
       zoom:    13,
       zoomControl: true,
       scrollWheelZoom: false,
-
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
@@ -99,14 +98,14 @@ const pins = mappableArticles.map((article: CollectionEntry<'articles'>) => ({
     }).addTo(map);
 
     const pinIcon = L.divIcon({
-    html: `<svg viewBox="0 0 38 52" width="38" height="52" xmlns="http://www.w3.org/2000/svg">
+      html: `<svg viewBox="0 0 38 52" width="38" height="52" xmlns="http://www.w3.org/2000/svg">
         <path d="M19,2 C29,2 36,11 36,19.5 C36,33 19,50 19,50 C19,50 2,33 2,19.5 C2,11 9,2 19,2 Z" fill="#C4956A" stroke="#1C1814" stroke-width="1.5"/>
         <circle cx="19" cy="19.5" r="5.5" fill="#1C1814"/>
-    </svg>`,
-    className: '',
-    iconSize:    [38, 52],
-    iconAnchor:  [19, 52],
-    popupAnchor: [0, -54],
+      </svg>`,
+      className: '',
+      iconSize:    [38, 52],
+      iconAnchor:  [19, 52],
+      popupAnchor: [0, -54],
     });
 
     const bounds = [];
@@ -127,18 +126,19 @@ const pins = mappableArticles.map((article: CollectionEntry<'articles'>) => ({
         </div>
       `;
 
-      const popup = L.popup({
+      // Bind popup once at setup time
+      marker.bindPopup(L.popup({
         closeButton: true,
         maxWidth: 280,
         className: 'map-popup',
-      }).setContent(popupContent);
+      }).setContent(popupContent));
 
       let popupOpen = false;
 
       // Desktop: hover opens popup, click navigates
       marker.on('mouseover', function () {
         if (window.matchMedia('(hover: hover)').matches) {
-          marker.bindPopup(popup).openPopup();
+          marker.openPopup();
           popupOpen = true;
         }
       });
@@ -151,7 +151,7 @@ const pins = mappableArticles.map((article: CollectionEntry<'articles'>) => ({
           if (popupOpen) {
             window.location.href = `/articles/${pin.slug}`;
           } else {
-            marker.bindPopup(popup).openPopup();
+            marker.openPopup();
             popupOpen = true;
           }
         }
@@ -171,10 +171,9 @@ const pins = mappableArticles.map((article: CollectionEntry<'articles'>) => ({
 </script>
 
 <style is:global>
-
-.leaflet-marker-icon:hover {
-filter: brightness(1.15);
-}
+  .leaflet-marker-icon:hover {
+    filter: brightness(1.15);
+  }
 
   .map-popup .leaflet-popup-content-wrapper {
     background-color: var(--color-background);
@@ -242,11 +241,11 @@ filter: brightness(1.15);
     border-color: var(--color-text);
   }
 
-.map-popup .map-card-tag {
-  color: var(--color-background);
-}
+  .map-popup .map-card-tag {
+    color: var(--color-background);
+  }
 
-.map-popup .map-card-tag:hover {
-  color: var(--color-background);
-}
+  .map-popup .map-card-tag:hover {
+    color: var(--color-background);
+  }
 </style>
