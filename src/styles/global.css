@@ -220,6 +220,7 @@ main {
   font-family: var(--font-ui);
   font-size: var(--text-lg);
   color: var(--color-mersey);
+  text-wrap: balance;
 }
 
 .page-content {
