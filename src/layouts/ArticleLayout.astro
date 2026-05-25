@@ -8,8 +8,7 @@ const { frontmatter } = Astro.props;
 <BaseLayout 
   pageTitle={frontmatter.title}
   description={frontmatter.description}
-  ogImage={frontmatter.heroImage?.url}
-  ogType="article"
+  ogImage={frontmatter.heroImage?.src?.src}  ogType="article"
 >
 {frontmatter.heroImage && (
   <div class="hero-image">
