@@ -47,11 +47,9 @@ const fullTitle = `${pageTitle} | rpool.live`;
 <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" /></noscript>
 
 <body>
-    <header class={transparentHeader ? '' : 'scrolled'} data-transparent={transparentHeader}>      <nav>
+    <header class={transparentHeader ? '' : 'scrolled'} data-transparent={transparentHeader}>
+      <nav>
         <a href="/" class="nav-logo">rpool.live</a>
-        <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">
-          Menu
-        </button>
         <ul id="nav-links" class="nav-links">
           <li><a href="/eras/">Eras</a></li>
           <li><a href="/topics/">Topics</a></li>
@@ -60,11 +58,41 @@ const fullTitle = `${pageTitle} | rpool.live`;
           <!-- <li><a href="/tours/">Tours</a></li> under construction-->
           <li><a href="/about/">About</a></li>
         </ul>
+        <div class="nav-right">
+          <button class="nav-search-btn" id="search-open" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+          <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">
+            Menu
+          </button>
+        </div>
       </nav>
     </header>
+
+    <!-- Search modal -->
+    <div id="search-modal" class="search-modal" role="dialog" aria-modal="true" aria-label="Search">
+      <div class="search-modal-backdrop" id="search-backdrop"></div>
+      <div class="search-modal-inner">
+        <div class="search-modal-header">
+          <span class="search-modal-label">Search</span>
+          <button class="search-modal-close" id="search-close" aria-label="Close search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div id="search-container"></div>
+      </div>
+    </div>
+
     <main>
       <slot />
     </main>
+
 <footer>
   <div class="footer-inner">
     <div>
@@ -92,7 +120,9 @@ const fullTitle = `${pageTitle} | rpool.live`;
     <p>© {new Date().getFullYear()} rpool.live. All rights reserved.</p>
   </div>
 </footer>
+
     <script>
+      // ---- NAV TOGGLE ----
       const toggle = document.querySelector('.nav-toggle');
       const links = document.querySelector('.nav-links');
       toggle?.addEventListener('click', () => {
@@ -101,18 +131,79 @@ const fullTitle = `${pageTitle} | rpool.live`;
         links?.classList.toggle('open');
       });
 
-const header = document.querySelector('header');
-const isTransparent = header?.getAttribute('data-transparent') === 'true';
+      const header = document.querySelector('header');
+      const isTransparent = header?.getAttribute('data-transparent') === 'true';
 
-if (isTransparent) {
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      header?.classList.add('scrolled');
-    } else {
-      header?.classList.remove('scrolled');
-    }
-  });
-}
+      if (isTransparent) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 50) {
+            header?.classList.add('scrolled');
+          } else {
+            header?.classList.remove('scrolled');
+          }
+        });
+      }
+
+      // ---- SEARCH MODAL ----
+      const modal    = document.getElementById('search-modal');
+      const backdrop = document.getElementById('search-backdrop');
+      const openBtn  = document.getElementById('search-open');
+      const closeBtn = document.getElementById('search-close');
+      let pagefindLoaded = false;
+
+      function openSearch() {
+        modal?.classList.add('search-modal--open');
+        document.body.style.overflow = 'hidden';
+        if (!pagefindLoaded) {
+          loadPagefind();
+          pagefindLoaded = true;
+        }
+        // Focus the input after Pagefind renders it
+        setTimeout(() => {
+          const input = modal?.querySelector('input') as HTMLInputElement;
+          input?.focus();
+        }, 100);
+      }
+
+      function closeSearch() {
+        modal?.classList.remove('search-modal--open');
+        document.body.style.overflow = '';
+      }
+
+      openBtn?.addEventListener('click', openSearch);
+      closeBtn?.addEventListener('click', closeSearch);
+      backdrop?.addEventListener('click', closeSearch);
+
+      // Cmd+K / Ctrl+K to open, Escape to close
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          modal?.classList.contains('search-modal--open') ? closeSearch() : openSearch();
+        }
+        if (e.key === 'Escape') closeSearch();
+      });
+
+      function loadPagefind() {
+        // Load Pagefind UI CSS
+        const css = document.createElement('link');
+        css.rel  = 'stylesheet';
+        css.href = '/pagefind/pagefind-ui.css';
+        document.head.appendChild(css);
+
+        // Load Pagefind UI JS then initialise
+        const script = document.createElement('script');
+        script.src = '/pagefind/pagefind-ui.js';
+        script.onload = () => {
+          new (window as any).PagefindUI({
+            element: '#search-container',
+            showSubResults: false,
+            showImages: false,
+            excerptLength: 30,
+            resetStyles: false,
+          });
+        };
+        document.head.appendChild(script);
+      }
     </script>
   </body>
 </html>

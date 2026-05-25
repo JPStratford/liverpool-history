@@ -108,191 +108,202 @@ const sortedEras = eras.sort((a: CollectionEntry<'eras'>, b: CollectionEntry<'er
 </style>
 
 <script>
-  document.fonts.ready.then(function () {
-    const outer    = document.getElementById('hero-title-outer') as HTMLElement;
-    const viewport = document.getElementById('hero-viewport') as HTMLElement;
-    const ticker   = document.getElementById('hero-ticker') as HTMLElement;
-    const dot      = document.getElementById('hero-dot') as HTMLElement;
+// Wait for fonts to load before measuring and animating, to prevent layout shifts.
+  document.fonts.ready.then(function() {
+    if (!document.fonts.check("600 1em 'Cormorant Garamond'")) {
+      document.fonts.load("600 1em 'Cormorant Garamond'").then(init);
+    } else {
+      init();
+    }
+  });
 
-    if (!outer || !viewport || !ticker || !dot) return;
+  function init() {
+    setTimeout(function() {
+      const outer    = document.getElementById('hero-title-outer') as HTMLElement;
+      const viewport = document.getElementById('hero-viewport') as HTMLElement;
+      const ticker   = document.getElementById('hero-ticker') as HTMLElement;
+      const dot      = document.getElementById('hero-dot') as HTMLElement;
 
-    const cs = getComputedStyle(outer);
-    const measure = document.createElement('span');
-    measure.style.cssText = `position:absolute; visibility:hidden; white-space:nowrap; font-family:${cs.fontFamily}; font-size:${cs.fontSize}; font-weight:${cs.fontWeight}; letter-spacing:${cs.letterSpacing}; line-height:${cs.lineHeight};`;
+      if (!outer || !viewport || !ticker || !dot) return;
 
-    document.body.appendChild(measure);
+      const cs = getComputedStyle(outer);
+      const measure = document.createElement('span');
+      measure.style.cssText = `position:absolute; visibility:hidden; white-space:nowrap; font-family:${cs.fontFamily}; font-size:${cs.fontSize}; font-weight:${cs.fontWeight}; letter-spacing:${cs.letterSpacing}; line-height:${cs.lineHeight};`;
 
-    measure.textContent = 'Liverpool';
-    const liverpoolWidth = measure.getBoundingClientRect().width;
-    const naturalHeight  = measure.getBoundingClientRect().height;
-    console.log('naturalHeight:', naturalHeight);
+      document.body.appendChild(measure);
 
-    measure.textContent = 'Liver';
-    const liverWidth = measure.getBoundingClientRect().width;
+      measure.textContent = 'Liverpool';
+      const liverpoolWidth = measure.getBoundingClientRect().width;
+      const naturalHeight  = measure.getBoundingClientRect().height;
+      console.log('naturalHeight:', naturalHeight);
 
-    document.body.removeChild(measure);
+      measure.textContent = 'Liver';
+      const liverWidth = measure.getBoundingClientRect().width;
 
-    const charHeight    = ticker.getBoundingClientRect().height;
-    const viewportWidth = liverpoolWidth + 12;
+      document.body.removeChild(measure);
 
-    viewport.style.width  = viewportWidth + 'px';
-    viewport.style.height = (charHeight * 1.2) + 'px';
-    outer.style.width     = viewportWidth + 'px';
-    outer.style.height    = charHeight + 'px';
-    outer.style.overflow  = 'visible';
+      const charHeight    = ticker.getBoundingClientRect().height;
+      const viewportWidth = liverpoolWidth + 12;
 
-    ticker.style.left      = `-${liverWidth - 2.2}px`;
-    ticker.style.transform = 'translateX(0)';
+      viewport.style.width  = viewportWidth + 'px';
+      viewport.style.height = (charHeight * 1.2) + 'px';
+      outer.style.width     = viewportWidth + 'px';
+      outer.style.height    = charHeight + 'px';
+      outer.style.overflow  = 'visible';
 
-    // ---- TIMELINE SETUP ----
-    const timelineEl = document.getElementById('hero-timeline') as HTMLElement;
-    const wrap       = document.getElementById('hero-title-wrap') as HTMLElement;
-    timelineEl.classList.add('hero-timeline');
+      ticker.style.left      = `-${liverWidth - 2.2}px`;
+      ticker.style.transform = 'translateX(0)';
 
-    const foundedYear = 1207;
-    const currentYear = new Date().getFullYear();
+      // ---- TIMELINE SETUP ----
+      const timelineEl = document.getElementById('hero-timeline') as HTMLElement;
+      const wrap       = document.getElementById('hero-title-wrap') as HTMLElement;
+      timelineEl.classList.add('hero-timeline');
 
-    const labelSize  = parseFloat(cs.fontSize) * 0.14;
-    const lineGap    = labelSize * 1.6;
-    const tickHeight = labelSize * 0.9;
+      const foundedYear = 1207;
+      const currentYear = new Date().getFullYear();
 
-    // TIMELINE_OFFSET: change this single constant to adjust the left edge of the timeline
-    const timelineOffset = 4.4;
+      const labelSize  = parseFloat(cs.fontSize) * 0.14;
+      const lineGap    = labelSize * 1.6;
+      const tickHeight = labelSize * 0.9;
 
-    timelineEl.style.top    = (charHeight + lineGap) + 'px';
-    timelineEl.style.left   = timelineOffset + 'px';
-    timelineEl.style.width  = (liverpoolWidth - timelineOffset) + 'px';
-    timelineEl.style.height = (tickHeight + labelSize * 2.2) + 'px';
+      // TIMELINE_OFFSET: change this single constant to adjust the left edge of the timeline
+      const timelineOffset = 4.4;
 
-    wrap.style.width         = viewportWidth + 'px';
-    wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
+      timelineEl.style.top    = (charHeight + lineGap) + 'px';
+      timelineEl.style.left   = timelineOffset + 'px';
+      timelineEl.style.width  = (liverpoolWidth - timelineOffset) + 'px';
+      timelineEl.style.height = (tickHeight + labelSize * 2.2) + 'px';
 
-    // Horizontal line
-    const line = document.createElement('div');
-    line.style.cssText = `position:absolute; top:0; left:0; width:0; height:1px; background:currentColor; opacity:var(--timeline-opacity)`;
-    timelineEl.appendChild(line);
+      wrap.style.width         = viewportWidth + 'px';
+      wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
 
-    // Start tick at left edge — revealed late
-    const startTick = document.createElement('div');
-    startTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:0; transition:opacity 400ms ease;`;
-    timelineEl.appendChild(startTick);
+      // Horizontal line
+      const line = document.createElement('div');
+      line.style.cssText = `position:absolute; top:0; left:0; width:0; height:1px; background:currentColor; opacity:var(--timeline-opacity)`;
+      timelineEl.appendChild(line);
 
-    // End tick — tracks right edge of growing line
-    const endTick = document.createElement('div');
-    endTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:var(--timeline-opacity)`;
-    timelineEl.appendChild(endTick);
+      // Start tick at left edge — revealed late
+      const startTick = document.createElement('div');
+      startTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:0; transition:opacity 400ms ease;`;
+      timelineEl.appendChild(startTick);
 
-    // Founded year label: 1207, fixed at left, revealed late
-    const startLabel = document.createElement('span');
-    startLabel.textContent = String(foundedYear);
-    startLabel.style.cssText = `position:absolute; top:${tickHeight + labelSize * 0.35}px; left:0; font-family:${cs.fontFamily}; font-size:${labelSize}px; font-weight:400; letter-spacing:0.04em; opacity:0; color:inherit; white-space:nowrap; transition:opacity 400ms ease;`;
-    timelineEl.appendChild(startLabel);
+      // End tick — tracks right edge of growing line
+      const endTick = document.createElement('div');
+      endTick.style.cssText = `position:absolute; top:0; left:0; width:1px; height:${tickHeight}px; background:currentColor; opacity:var(--timeline-opacity)`;
+      timelineEl.appendChild(endTick);
 
-    // Current year label — tracks right edge, centred on tick
-    const endLabel = document.createElement('span');
-    endLabel.textContent = String(foundedYear);
-    endLabel.style.cssText = `position:absolute; top:${tickHeight + labelSize * 0.35}px; left:0; font-family:${cs.fontFamily}; font-size:${labelSize}px; font-weight:400; letter-spacing:0.04em; opacity:1; color:inherit; white-space:nowrap; transform:translateX(-50%);`;
-    timelineEl.appendChild(endLabel);
-    // ---- END TIMELINE SETUP ----
+      // Founded year label: 1207, fixed at left, revealed late
+      const startLabel = document.createElement('span');
+      startLabel.textContent = String(foundedYear);
+      startLabel.style.cssText = `position:absolute; top:${tickHeight + labelSize * 0.35}px; left:0; font-family:${cs.fontFamily}; font-size:${labelSize}px; font-weight:400; letter-spacing:0.04em; opacity:0; color:inherit; white-space:nowrap; transition:opacity 400ms ease;`;
+      timelineEl.appendChild(startLabel);
 
-    setTimeout(() => {
-      const duration = 3200;
-      const easing   = 'cubic-bezier(0.4, 0, 0.2, 1)';
-
-      ticker.style.transition = `transform ${duration}ms ${easing}`;
-      ticker.style.transform  = `translateX(${liverWidth}px)`;
-
-      // ---- TIMELINE ANIMATION ----
-      const startTime  = performance.now();
-      const revealAt   = 0.80;
-      let labelFadedIn = false;
-
-      line.style.transition     = `width ${duration}ms ${easing}`;
-      endTick.style.transition  = `left ${duration}ms ${easing}`;
-      endLabel.style.transition = `left ${duration}ms ${easing}`;
-
-      requestAnimationFrame(() => {
-        line.style.width    = (liverpoolWidth - timelineOffset) + 'px';
-        endTick.style.left  = (liverpoolWidth - timelineOffset - 1) + 'px';
-        endLabel.style.left = (liverpoolWidth - timelineOffset) + 'px';
-      });
-
-      function tickTimeline(now: number) {
-        const elapsed  = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        const year = Math.round(foundedYear + (currentYear - foundedYear) * progress);
-        endLabel.textContent = String(year);
-
-        if (!labelFadedIn && progress >= revealAt) {
-          labelFadedIn = true;
-          startLabel.style.opacity = '1';
-          startTick.style.opacity = 'var(--timeline-opacity)'
-        }
-
-        if (progress < 1) {
-          requestAnimationFrame(tickTimeline);
-        } else {
-          endLabel.textContent = String(currentYear);
-        }
-      }
-
-      requestAnimationFrame(tickTimeline);
-      // ---- END TIMELINE ANIMATION ----
+      // Current year label — tracks right edge, centred on tick
+      const endLabel = document.createElement('span');
+      endLabel.textContent = String(foundedYear);
+      endLabel.style.cssText = `position:absolute; top:${tickHeight + labelSize * 0.35}px; left:0; font-family:${cs.fontFamily}; font-size:${labelSize}px; font-weight:400; letter-spacing:0.04em; opacity:1; color:inherit; white-space:nowrap; transform:translateX(-50%);`;
+      timelineEl.appendChild(endLabel);
+      // ---- END TIMELINE SETUP ----
 
       setTimeout(() => {
-        dot.style.opacity = '0';
+        const duration = 3200;
+        const easing   = 'cubic-bezier(0.4, 0, 0.2, 1)';
 
-        // --- SWAP BLOCK START (comment out to disable swap) ---
-        let swapComplete = false;
+        ticker.style.transition = `transform ${duration}ms ${easing}`;
+        ticker.style.transform  = `translateX(${liverWidth}px)`;
+
+        // ---- TIMELINE ANIMATION ----
+        const startTime  = performance.now();
+        const revealAt   = 0.80;
+        let labelFadedIn = false;
+
+        line.style.transition     = `width ${duration}ms ${easing}`;
+        endTick.style.transition  = `left ${duration}ms ${easing}`;
+        endLabel.style.transition = `left ${duration}ms ${easing}`;
+
+        requestAnimationFrame(() => {
+          line.style.width    = (liverpoolWidth - timelineOffset) + 'px';
+          endTick.style.left  = (liverpoolWidth - timelineOffset - 1) + 'px';
+          endLabel.style.left = (liverpoolWidth - timelineOffset) + 'px';
+        });
+
+        function tickTimeline(now: number) {
+          const elapsed  = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+
+          const year = Math.round(foundedYear + (currentYear - foundedYear) * progress);
+          endLabel.textContent = String(year);
+
+          if (!labelFadedIn && progress >= revealAt) {
+            labelFadedIn = true;
+            startLabel.style.opacity = '1';
+            startTick.style.opacity  = 'var(--timeline-opacity)';
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(tickTimeline);
+          } else {
+            endLabel.textContent = String(currentYear);
+          }
+        }
+
+        requestAnimationFrame(tickTimeline);
+        // ---- END TIMELINE ANIMATION ----
 
         setTimeout(() => {
-          line.style.transition     = 'none';
-          endTick.style.transition  = 'none';
-          endLabel.style.transition = 'none';
+          dot.style.opacity = '0';
 
-          outer.innerHTML        = 'Liverpool';
-          outer.style.textAlign  = 'left';
-          outer.style.height     = '';
-          outer.style.overflow   = '';
-          outer.style.marginLeft = '2.2px';
-          timelineEl.style.left  = timelineOffset + 'px';
-          timelineEl.style.width = (liverpoolWidth - timelineOffset) + 'px';
-          wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
+          // --- SWAP BLOCK START (comment out to disable swap) ---
+          let swapComplete = false;
 
-          swapComplete = true;
-        }, 600);
+          setTimeout(() => {
+            line.style.transition     = 'none';
+            endTick.style.transition  = 'none';
+            endLabel.style.transition = 'none';
 
-        window.addEventListener('resize', () => {
-          if (!swapComplete) return;
+            outer.innerHTML        = 'Liverpool';
+            outer.style.textAlign  = 'left';
+            outer.style.height     = '';
+            outer.style.overflow   = '';
+            outer.style.marginLeft = '2.2px';
+            timelineEl.style.left  = timelineOffset + 'px';
+            timelineEl.style.width = (liverpoolWidth - timelineOffset) + 'px';
+            wrap.style.paddingBottom = (lineGap + tickHeight + labelSize * 2.2) + 'px';
 
-          const cs2         = getComputedStyle(outer);
-          const labelSize2  = parseFloat(cs2.fontSize) * 0.14;
-          const lineGap2    = labelSize2 * 1.6;
-          const tickHeight2 = labelSize2 * 0.9;
+            swapComplete = true;
+          }, 600);
 
-          const measure2 = document.createElement('span');
-          measure2.style.cssText = `position:absolute; visibility:hidden; white-space:nowrap; font-family:${cs2.fontFamily}; font-size:${cs2.fontSize}; font-weight:${cs2.fontWeight}; letter-spacing:${cs2.letterSpacing}; line-height:${cs2.lineHeight};`;
-          document.body.appendChild(measure2);
-          measure2.textContent = 'Liverpool';
-          const newLiverpoolWidth = measure2.getBoundingClientRect().width;
-          document.body.removeChild(measure2);
+          window.addEventListener('resize', () => {
+            if (!swapComplete) return;
 
-          const newCharHeight = outer.getBoundingClientRect().height;
-          timelineEl.style.top     = (newCharHeight + lineGap2) + 'px';
-          timelineEl.style.left    = timelineOffset + 'px';
-          timelineEl.style.width   = (newLiverpoolWidth - timelineOffset) + 'px';
-          line.style.width         = (newLiverpoolWidth - timelineOffset) + 'px';
-          endTick.style.left       = (newLiverpoolWidth - timelineOffset - 1) + 'px';
-          endLabel.style.left      = (newLiverpoolWidth - timelineOffset) + 'px';
-          wrap.style.paddingBottom = (lineGap2 + tickHeight2 + labelSize2 * 2.2) + 'px';
-          wrap.style.width         = (newLiverpoolWidth + 12) + 'px';
-          outer.style.marginLeft   = '2.2px';
-        });
-        // --- SWAP BLOCK END ---
+            const cs2         = getComputedStyle(outer);
+            const labelSize2  = parseFloat(cs2.fontSize) * 0.14;
+            const lineGap2    = labelSize2 * 1.6;
+            const tickHeight2 = labelSize2 * 0.9;
 
-      }, duration * 0.78 + 500);
+            const measure2 = document.createElement('span');
+            measure2.style.cssText = `position:absolute; visibility:hidden; white-space:nowrap; font-family:${cs2.fontFamily}; font-size:${cs2.fontSize}; font-weight:${cs2.fontWeight}; letter-spacing:${cs2.letterSpacing}; line-height:${cs2.lineHeight};`;
+            document.body.appendChild(measure2);
+            measure2.textContent = 'Liverpool';
+            const newLiverpoolWidth = measure2.getBoundingClientRect().width;
+            document.body.removeChild(measure2);
 
-    }, 500);
-  });
+            const newCharHeight = outer.getBoundingClientRect().height;
+            timelineEl.style.top     = (newCharHeight + lineGap2) + 'px';
+            timelineEl.style.left    = timelineOffset + 'px';
+            timelineEl.style.width   = (newLiverpoolWidth - timelineOffset) + 'px';
+            line.style.width         = (newLiverpoolWidth - timelineOffset) + 'px';
+            endTick.style.left       = (newLiverpoolWidth - timelineOffset - 1) + 'px';
+            endLabel.style.left      = (newLiverpoolWidth - timelineOffset) + 'px';
+            wrap.style.paddingBottom = (lineGap2 + tickHeight2 + labelSize2 * 2.2) + 'px';
+            wrap.style.width         = (newLiverpoolWidth + 12) + 'px';
+            outer.style.marginLeft   = '2.2px';
+          });
+          // --- SWAP BLOCK END ---
+
+        }, duration * 0.78 + 500);
+
+      }, 500);
+    }, 300); // font render delay
+  }
 </script>
