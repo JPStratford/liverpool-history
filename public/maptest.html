@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Map Test — rpool.live</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --mersey:       #1a2332;
+      --mersey-deep:  #111b28;
+      --sandstone:    #C4956A;
+      --sandstone-lt: #d4aa85;
+      --stone-warm:   #8a7560;
+      --ink:          #0d1520;
+      --mist:         rgba(245, 240, 232, 0.06);
+      --label:        rgba(245, 240, 232, 0.55);
+      --label-strong: rgba(245, 240, 232, 0.85);
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--ink);
+      overflow: hidden;
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Controls panel */
+    #controls {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .ctrl-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(13, 21, 32, 0.85);
+      border: 1px solid rgba(196, 149, 106, 0.25);
+      color: var(--sandstone);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 180ms, border-color 180ms;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      user-select: none;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(196, 149, 106, 0.12);
+      border-color: rgba(196, 149, 106, 0.5);
+    }
+
+    .ctrl-separator {
+      height: 1px;
+      background: rgba(196, 149, 106, 0.15);
+      margin: 4px 0;
+    }
+
+    /* Label overlay */
+    #label {
+      position: absolute;
+      bottom: 32px;
+      left: 32px;
+      z-index: 10;
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--sandstone);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+
+    /* MapLibre attribution override */
+    .maplibregl-ctrl-attrib {
+      background: rgba(13, 21, 32, 0.7) !important;
+      color: rgba(245, 240, 232, 0.35) !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 10px !important;
+    }
+
+    .maplibregl-ctrl-attrib a {
+      color: rgba(196, 149, 106, 0.5) !important;
+    }
+
+    .maplibregl-ctrl-attrib-button {
+      filter: invert(1) opacity(0.4) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div id="controls">
+    <button class="ctrl-btn" id="zoom-in"  title="Zoom in">+</button>
+    <button class="ctrl-btn" id="zoom-out" title="Zoom out">−</button>
+    <div class="ctrl-separator"></div>
+    <button class="ctrl-btn" id="pitch-up"   title="Increase pitch">▲</button>
+    <button class="ctrl-btn" id="pitch-down" title="Decrease pitch">▼</button>
+    <div class="ctrl-separator"></div>
+    <button class="ctrl-btn" id="rotate-l" title="Rotate left">↺</button>
+    <button class="ctrl-btn" id="rotate-r" title="Rotate right">↻</button>
+    <div class="ctrl-separator"></div>
+    <button class="ctrl-btn" id="reset" title="Reset view" style="font-size:11px; letter-spacing:0.05em;">&#8962;</button>
+  </div>
+
+  <div id="label">Liverpool Waterfront</div>
+
+  <!-- Palette swatches — dev tool, remove before production -->
+  <div id="palette-swatches" style="position:absolute; bottom:32px; right:80px; z-index:10; display:flex; gap:6px; align-items:flex-end;"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script>
+
+    // ─── YOUR PROTOMAPS API KEY ──────────────────────────────────────────────
+    const PROTOMAPS_KEY = '2ec0ba0367a35d1c';
+    // ────────────────────────────────────────────────────────────────────────
+
+    // ─── COLOUR PALETTE ──────────────────────────────────────────────────────
+    // These are JS literals — CSS custom properties (var(--x)) don't work here.
+    // Keep in sync with :root variables in the CSS above manually.
+    const PALETTE = {
+      ink:          '#0d1520',   // --ink
+      mersey:       '#090e17',   // water / Mersey
+      ground:       '#1a2438',   // --mersey (land surface)
+      groundDark:   '#131c27',   // parks, secondary land
+      building:     '#1e2d3d',   // building base (short)
+      buildingTall: '#435f80',   // building face (tall)
+      buildingRoof: '#2a3d4f',   // roof highlight (short)
+      buildingRoofTall: '#5a7a90', // roof highlight (tall)
+      shadow:       '#090f18',   // building shadow layer
+      roadMajor:    'rgba(245, 240, 232, 0.12)',
+      roadMinor:    'rgba(245, 240, 232, 0.07)',
+      roadOther:    'rgba(245, 240, 232, 0.04)',
+      rail:         'rgba(196, 149, 106, 0.25)',
+      ferry:        'rgba(74, 120, 160, 0.35)',
+      waterEdge:    'rgba(74, 85, 104, 0.5)',
+      sandstone:    '#C4956A',   // --sandstone
+      sandstoneLt:  '#d4aa85',   // --sandstone-lt
+      label:        'rgba(245, 240, 232, 0.4)',
+      labelPlace:   'rgba(196, 149, 106, 0.55)',
+    };
+    // ────────────────────────────────────────────────────────────────────────
+
+    // ─── PALETTE SWATCHES (dev tool) ─────────────────────────────────────────
+    const swatchContainer = document.getElementById('palette-swatches');
+    Object.entries(PALETTE).forEach(function(entry) {
+      var name = entry[0], colour = entry[1];
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:3px;';
+      var swatch = document.createElement('div');
+      swatch.style.cssText = 'width:24px; height:24px; background:' + colour + '; border:1px solid rgba(255,255,255,0.15);';
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-family:Inter,sans-serif; font-size:8px; color:rgba(245,240,232,0.45); letter-spacing:0.05em; writing-mode:vertical-rl; transform:rotate(180deg); padding-bottom:2px;';
+      lbl.textContent = name;
+      wrap.appendChild(swatch);
+      wrap.appendChild(lbl);
+      swatchContainer.appendChild(wrap);
+    });
+    // ────────────────────────────────────────────────────────────────────────
+
+    const TILE_URL = 'https://api.protomaps.com/tiles/v4/{z}/{x}/{y}.mvt?key=' + PROTOMAPS_KEY;
+
+    // ─── INITIAL CAMERA ──────────────────────────────────────────────────────
+    var HOME = {
+      center: [-2.9960, 53.4045],
+      zoom: 15.5,
+      pitch: 52,
+      bearing: -20
+    };
+
+    var map = new maplibregl.Map({
+      container: 'map',
+      style: buildStyle(TILE_URL),
+      center: HOME.center,
+      zoom: HOME.zoom,
+      pitch: HOME.pitch,
+      bearing: HOME.bearing,
+      antialias: true,
+      maxPitch: 85,
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: false }), 'bottom-right');
+
+    // ─── STYLE ───────────────────────────────────────────────────────────────
+
+    function buildStyle(tileUrl) {
+      return {
+        version: 8,
+        glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
+        sprite: 'https://protomaps.github.io/basemaps-assets/sprites/v4/light',
+        sources: {
+          protomaps: {
+            type: 'vector',
+            tiles: [tileUrl],
+            maxzoom: 15,
+            attribution: '\u00a9 <a href="https://protomaps.com">Protomaps</a> \u00a9 <a href="https://openstreetmap.org">OpenStreetMap</a>'
+          }
+        },
+        layers: [
+
+          // ── Base ──────────────────────────────────────────────────────────
+
+          {
+            id: 'background',
+            type: 'background',
+            paint: { 'background-color': PALETTE.ink }
+          },
+
+          // Land surface — drawn first, everything else on top
+          {
+            id: 'earth',
+            type: 'fill',
+            source: 'protomaps',
+            'source-layer': 'earth',
+            paint: { 'fill-color': PALETTE.ground }
+          },
+
+          // ── Water ────────────────────────────────────────────────────────
+
+          {
+            id: 'water',
+            type: 'fill',
+            source: 'protomaps',
+            'source-layer': 'water',
+            paint: {
+              'fill-color': PALETTE.mersey,
+              'fill-opacity': 1
+            }
+          },
+
+          {
+            id: 'water-edge',
+            type: 'line',
+            source: 'protomaps',
+            'source-layer': 'water',
+            paint: {
+              'line-color': PALETTE.waterEdge,
+              'line-width': 1
+            }
+          },
+
+          // ── Landuse ──────────────────────────────────────────────────────
+          // Green / natural
+          {
+            id: 'landuse-green',
+            type: 'fill',
+            source: 'protomaps',
+            'source-layer': 'landuse',
+            filter: ['in', 'kind',
+              'park', 'garden', 'grass', 'wood', 'forest',
+              'scrub', 'grassland', 'pitch', 'playground'
+            ],
+            paint: {
+              'fill-color': PALETTE.groundDark,
+              'fill-opacity': 1
+            }
+          },
+
+          // Civic / institutional
+          {
+            id: 'landuse-civic',
+            type: 'fill',
+            source: 'protomaps',
+            'source-layer': 'landuse',
+            filter: ['in', 'kind',
+              'university', 'school', 'college', 'hospital'
+            ],
+            paint: {
+              'fill-color': PALETTE.groundDark,
+              'fill-opacity': 0.6
+            }
+          },
+
+          // Industrial / commercial
+          {
+            id: 'landuse-industrial',
+            type: 'fill',
+            source: 'protomaps',
+            'source-layer': 'landuse',
+            filter: ['in', 'kind', 'industrial', 'commercial', 'railway'],
+            paint: {
+              'fill-color': PALETTE.groundDark,
+              'fill-opacity': 0.4
+            }
+          },
+
+          // Pedestrian areas / piers / platforms
+          {
+            id: 'landuse-pedestrian',
+            type: 'fill',
+            source: 'protomaps',
+            'source-layer': 'landuse',
+            filter: ['in', 'kind', 'pedestrian', 'pier', 'platform'],
+            paint: {
+              'fill-color': PALETTE.ground,
+              'fill-opacity': 0.8
+            }
+          },
+
+          // ── Roads ────────────────────────────────────────────────────────
+
+          // Ferry routes
+          {
+            id: 'roads-ferry',
+            type: 'line',
+            source: 'protomaps',
+            'source-layer': 'roads',
+            filter: ['==', 'kind', 'ferry'],
+            paint: {
+              'line-color': PALETTE.ferry,
+              'line-width': 1.5,
+              'line-dasharray': [4, 4]
+            }
+          },
+
+          // Paths and other minor ways
+          {
+            id: 'roads-other',
+            type: 'line',
+            source: 'protomaps',
+            'source-layer': 'roads',
+            filter: ['in', 'kind', 'other', 'path'],
+            paint: {
+              'line-color': PALETTE.roadOther,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.4, 17, 1.2]
+            }
+          },
+
+          // Minor roads
+          {
+            id: 'roads-minor',
+            type: 'line',
+            source: 'protomaps',
+            'source-layer': 'roads',
+            filter: ['==', 'kind', 'minor_road'],
+            paint: {
+              'line-color': PALETTE.roadMinor,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 17, 2.5]
+            }
+          },
+
+          // Major roads
+          {
+            id: 'roads-major',
+            type: 'line',
+            source: 'protomaps',
+            'source-layer': 'roads',
+            filter: ['==', 'kind', 'major_road'],
+            paint: {
+              'line-color': PALETTE.roadMajor,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.2, 17, 4]
+            }
+          },
+
+          // Highways
+          {
+            id: 'roads-highway',
+            type: 'line',
+            source: 'protomaps',
+            'source-layer': 'roads',
+            filter: ['==', 'kind', 'highway'],
+            paint: {
+              'line-color': PALETTE.roadMajor,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 6]
+            }
+          },
+
+          // Rail, aerialway, aeroway — dashed
+          {
+            id: 'roads-rail',
+            type: 'line',
+            source: 'protomaps',
+            'source-layer': 'roads',
+            filter: ['in', 'kind', 'rail', 'aerialway', 'aeroway'],
+            paint: {
+              'line-color': PALETTE.rail,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.8, 17, 2],
+              'line-dasharray': [6, 3]
+            }
+          },
+
+          // ── Buildings ────────────────────────────────────────────────────
+
+          // Shadow layer — offset duplicate for depth
+          {
+            id: 'buildings-shadow',
+            type: 'fill-extrusion',
+            source: 'protomaps',
+            'source-layer': 'buildings',
+            paint: {
+              'fill-extrusion-color': PALETTE.shadow,
+              'fill-extrusion-height': [
+                'interpolate', ['linear'], ['zoom'],
+                14, 0,
+                15, ['coalesce', ['get', 'height'], 10]
+              ],
+              'fill-extrusion-base': 0,
+              'fill-extrusion-opacity': 0.5,
+              'fill-extrusion-translate': [3, 5]
+            }
+          },
+
+          // Main extrusion — height-driven colour
+          {
+            id: 'buildings',
+            type: 'fill-extrusion',
+            source: 'protomaps',
+            'source-layer': 'buildings',
+            paint: {
+              'fill-extrusion-color': [
+                'interpolate', ['linear'],
+                ['coalesce', ['get', 'height'], 8],
+                0,   PALETTE.building,
+                10,  '#22334a',
+                20,  '#2a3d54',
+                40,  '#31495f',
+                80,  '#3a5470',
+                150, PALETTE.buildingTall
+              ],
+              'fill-extrusion-height': [
+                'interpolate', ['linear'], ['zoom'],
+                14, 0,
+                15, ['coalesce', ['get', 'height'], 10]
+              ],
+              'fill-extrusion-base': [
+                'interpolate', ['linear'], ['zoom'],
+                14, 0,
+                15, ['coalesce', ['get', 'min_height'], 0]
+              ],
+              'fill-extrusion-opacity': [
+                'interpolate', ['linear'], ['zoom'], 14, 0, 15, 0.95
+              ]
+            }
+          },
+
+          // Roof highlight — thin layer on top of main extrusion
+          {
+            id: 'buildings-roof',
+            type: 'fill-extrusion',
+            source: 'protomaps',
+            'source-layer': 'buildings',
+            paint: {
+              'fill-extrusion-color': [
+                'interpolate', ['linear'],
+                ['coalesce', ['get', 'height'], 8],
+                0,   PALETTE.buildingRoof,
+                20,  '#3a5060',
+                60,  '#4a6375',
+                120, PALETTE.buildingRoofTall
+              ],
+              'fill-extrusion-height': [
+                'interpolate', ['linear'], ['zoom'],
+                14, 0,
+                15, ['+', ['coalesce', ['get', 'height'], 10], 0.3]
+              ],
+              'fill-extrusion-base': [
+                'interpolate', ['linear'], ['zoom'],
+                14, 0,
+                15, ['coalesce', ['get', 'height'], 10]
+              ],
+              'fill-extrusion-opacity': [
+                'interpolate', ['linear'], ['zoom'], 14, 0, 15, 0.7
+              ]
+            }
+          },
+
+          // ── Labels (always last — render above extrusion) ─────────────────
+
+          // Road labels
+          {
+            id: 'road-labels',
+            type: 'symbol',
+            source: 'protomaps',
+            'source-layer': 'roads',
+            filter: ['in', 'kind', 'major_road', 'minor_road'],
+            layout: {
+              'text-field': ['coalesce', ['get', 'name'], ['get', 'ref']],
+              'text-font': ['Noto Sans Regular'],
+              'text-size': ['interpolate', ['linear'], ['zoom'], 14, 9, 17, 12],
+              'symbol-placement': 'line',
+              'text-max-angle': 30
+            },
+            paint: {
+              'text-color': PALETTE.label,
+              'text-halo-color': 'rgba(13, 21, 32, 0.85)',
+              'text-halo-width': 1.5
+            }
+          },
+
+          // Place labels — neighbourhoods / suburbs
+          {
+            id: 'place-labels',
+            type: 'symbol',
+            source: 'protomaps',
+            'source-layer': 'places',
+            filter: ['in', 'kind', 'neighbourhood', 'quarter', 'suburb'],
+            layout: {
+              'text-field': ['get', 'name'],
+              'text-font': ['Noto Sans Regular'],
+              'text-size': ['interpolate', ['linear'], ['zoom'], 13, 10, 16, 14],
+              'text-transform': 'uppercase',
+              'text-letter-spacing': 0.12
+            },
+            paint: {
+              'text-color': PALETTE.labelPlace,
+              'text-halo-color': 'rgba(13, 21, 32, 0.9)',
+              'text-halo-width': 2
+            }
+          }
+
+        ]
+      };
+    }
+
+    // ─── CONTROLS ────────────────────────────────────────────────────────────
+
+    function btn(id, fn) {
+      document.getElementById(id).addEventListener('click', fn);
+    }
+
+    btn('zoom-in',    function() { map.zoomIn({ duration: 300 }); });
+    btn('zoom-out',   function() { map.zoomOut({ duration: 300 }); });
+    btn('pitch-up',   function() { map.easeTo({ pitch: Math.min(map.getPitch() + 5, 85), duration: 200 }); });
+    btn('pitch-down', function() { map.easeTo({ pitch: Math.max(map.getPitch() - 5, 0),  duration: 200 }); });
+    btn('rotate-l',   function() { map.easeTo({ bearing: map.getBearing() - 15, duration: 200 }); });
+    btn('rotate-r',   function() { map.easeTo({ bearing: map.getBearing() + 15, duration: 200 }); });
+    btn('reset',      function() { map.easeTo({ center: HOME.center, zoom: HOME.zoom, pitch: HOME.pitch, bearing: HOME.bearing, duration: 800 }); });
+
+  </script>
+</body>
+</html>

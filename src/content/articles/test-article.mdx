@@ -18,7 +18,7 @@ draft: false
 
 import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import LightboxImage from '../../components/LightboxImage.astro';
-
+import MapIso from '../../components/MapIso.astro';
 
 ## Introduction
 
@@ -42,4 +42,10 @@ Seriously, are you not getting this?
   src="https://placehold.co/1200x800" 
   alt="Test lightbox image"
   caption="A test caption for the lightbox."
+/>
+
+<MapIso
+  center={[-2.9960, 53.4045]}
+  height="480px"
+  label="Liverpool Waterfront"
 />

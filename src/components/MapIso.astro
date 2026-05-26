@@ -1,0 +1,303 @@
+---
+// MapIso.astro — Isometric map component for article content flow
+// Usage:
+//   <MapIso
+//     center={[-2.9960, 53.4045]}
+//     zoom={15.5}
+//     pitch={52}
+//     bearing={-20}
+//     height="480px"
+//     label="Liverpool Waterfront, 1850"
+//   />
+//
+// Only `center` is required. All other props have sensible defaults.
+// Height accepts any CSS value: "400px", "50vh", etc.
+
+interface Props {
+  center: [number, number];
+  zoom?: number;
+  pitch?: number;
+  bearing?: number;
+  height?: string;
+  label?: string;
+}
+
+const {
+  center,
+  zoom    = 15.5,
+  pitch   = 52,
+  bearing = -20,
+  height  = '420px',
+  label,
+} = Astro.props;
+
+// Unique ID per instance — allows multiple maps on one page
+const uid = 'map-iso-' + Math.random().toString(36).slice(2, 8);
+
+// Serialise camera props for the inline script
+const camera = JSON.stringify({ center, zoom, pitch, bearing });
+
+// Protomaps API key from environment variable
+const protomapsKey = import.meta.env.PUBLIC_PROTOMAPS_KEY;
+---
+
+<div class="map-iso-wrap" style={`height: ${height};`}>
+  <div id={uid} class="map-iso-canvas"></div>
+  {label && <p class="map-iso-label">{label}</p>}
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+
+<script define:vars={{ uid, camera, protomapsKey }}>
+
+  // ─── PROTOMAPS KEY ────────────────────────────────────────────────────────
+  // In production, replace with import.meta.env.PUBLIC_PROTOMAPS_KEY
+  // and set the key in Cloudflare Pages environment variables.
+  const PROTOMAPS_KEY = protomapsKey;
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const TILE_URL = 'https://api.protomaps.com/tiles/v4/{z}/{x}/{y}.mvt?key=' + PROTOMAPS_KEY;
+
+  const PALETTE = {
+    ink:              '#0d1520',
+    mersey:           '#090e17',
+    ground:           '#1a2438',
+    groundDark:       '#131c27',
+    building:         '#1e2d3d',
+    buildingTall:     '#435f80',
+    buildingRoof:     '#2a3d4f',
+    buildingRoofTall: '#5a7a90',
+    shadow:           '#090f18',
+    roadMajor:        'rgba(245, 240, 232, 0.12)',
+    roadMinor:        'rgba(245, 240, 232, 0.07)',
+    roadOther:        'rgba(245, 240, 232, 0.04)',
+    rail:             'rgba(196, 149, 106, 0.25)',
+    ferry:            'rgba(74, 120, 160, 0.35)',
+    waterEdge:        'rgba(74, 85, 104, 0.5)',
+    label:            'rgba(245, 240, 232, 0.4)',
+    labelPlace:       'rgba(196, 149, 106, 0.55)',
+  };
+
+  function buildStyle(tileUrl) {
+    return {
+      version: 8,
+      glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
+      sprite: 'https://protomaps.github.io/basemaps-assets/sprites/v4/light',
+      sources: {
+        protomaps: {
+          type: 'vector',
+          tiles: [tileUrl],
+          maxzoom: 15,
+          attribution: '\u00a9 <a href="https://protomaps.com">Protomaps</a> \u00a9 <a href="https://openstreetmap.org">OpenStreetMap</a>'
+        }
+      },
+      layers: [
+
+        { id: 'background', type: 'background',
+          paint: { 'background-color': PALETTE.ink } },
+
+        { id: 'earth', type: 'fill', source: 'protomaps', 'source-layer': 'earth',
+          paint: { 'fill-color': PALETTE.ground } },
+
+        { id: 'water', type: 'fill', source: 'protomaps', 'source-layer': 'water',
+          paint: { 'fill-color': PALETTE.mersey, 'fill-opacity': 1 } },
+
+        { id: 'water-edge', type: 'line', source: 'protomaps', 'source-layer': 'water',
+          paint: { 'line-color': PALETTE.waterEdge, 'line-width': 1 } },
+
+        { id: 'landuse-green', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'park', 'garden', 'grass', 'wood', 'forest', 'scrub', 'grassland', 'pitch', 'playground'],
+          paint: { 'fill-color': PALETTE.groundDark, 'fill-opacity': 1 } },
+
+        { id: 'landuse-civic', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'university', 'school', 'college', 'hospital'],
+          paint: { 'fill-color': PALETTE.groundDark, 'fill-opacity': 0.6 } },
+
+        { id: 'landuse-industrial', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'industrial', 'commercial', 'railway'],
+          paint: { 'fill-color': PALETTE.groundDark, 'fill-opacity': 0.4 } },
+
+        { id: 'landuse-pedestrian', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'pedestrian', 'pier', 'platform'],
+          paint: { 'fill-color': PALETTE.ground, 'fill-opacity': 0.8 } },
+
+        { id: 'roads-ferry', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'ferry'],
+          paint: { 'line-color': PALETTE.ferry, 'line-width': 1.5, 'line-dasharray': [4, 4] } },
+
+        { id: 'roads-other', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['in', 'kind', 'other', 'path'],
+          paint: { 'line-color': PALETTE.roadOther,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.4, 17, 1.2] } },
+
+        { id: 'roads-minor', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'minor_road'],
+          paint: { 'line-color': PALETTE.roadMinor,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.6, 17, 2.5] } },
+
+        { id: 'roads-major', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'major_road'],
+          paint: { 'line-color': PALETTE.roadMajor,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1.2, 17, 4] } },
+
+        { id: 'roads-highway', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'highway'],
+          paint: { 'line-color': PALETTE.roadMajor,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 6] } },
+
+        { id: 'roads-rail', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['in', 'kind', 'rail', 'aerialway', 'aeroway'],
+          paint: { 'line-color': PALETTE.rail,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.8, 17, 2],
+            'line-dasharray': [6, 3] } },
+
+        { id: 'buildings-shadow', type: 'fill-extrusion', source: 'protomaps', 'source-layer': 'buildings',
+          paint: {
+            'fill-extrusion-color': PALETTE.shadow,
+            'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, ['coalesce', ['get', 'height'], 10]],
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': 0.5,
+            'fill-extrusion-translate': [3, 5]
+          } },
+
+        { id: 'buildings', type: 'fill-extrusion', source: 'protomaps', 'source-layer': 'buildings',
+          paint: {
+            'fill-extrusion-color': ['interpolate', ['linear'], ['coalesce', ['get', 'height'], 8],
+              0, PALETTE.building, 10, '#22334a', 20, '#2a3d54',
+              40, '#31495f', 80, '#3a5470', 150, PALETTE.buildingTall],
+            'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, ['coalesce', ['get', 'height'], 10]],
+            'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, ['coalesce', ['get', 'min_height'], 0]],
+            'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 0.95]
+          } },
+
+        { id: 'buildings-roof', type: 'fill-extrusion', source: 'protomaps', 'source-layer': 'buildings',
+          paint: {
+            'fill-extrusion-color': ['interpolate', ['linear'], ['coalesce', ['get', 'height'], 8],
+              0, PALETTE.buildingRoof, 20, '#3a5060', 60, '#4a6375', 120, PALETTE.buildingRoofTall],
+            'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, ['+', ['coalesce', ['get', 'height'], 10], 0.3]],
+            'fill-extrusion-base': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, ['coalesce', ['get', 'height'], 10]],
+            'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 0.7]
+          } },
+
+        { id: 'road-labels', type: 'symbol', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['in', 'kind', 'major_road', 'minor_road'],
+          layout: {
+            'text-field': ['coalesce', ['get', 'name'], ['get', 'ref']],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 14, 9, 17, 12],
+            'symbol-placement': 'line',
+            'text-max-angle': 30
+          },
+          paint: {
+            'text-color': PALETTE.label,
+            'text-halo-color': 'rgba(13, 21, 32, 0.85)',
+            'text-halo-width': 1.5
+          } },
+
+        { id: 'place-labels', type: 'symbol', source: 'protomaps', 'source-layer': 'places',
+          filter: ['in', 'kind', 'neighbourhood', 'quarter', 'suburb'],
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 13, 10, 16, 14],
+            'text-transform': 'uppercase',
+            'text-letter-spacing': 0.12
+          },
+          paint: {
+            'text-color': PALETTE.labelPlace,
+            'text-halo-color': 'rgba(13, 21, 32, 0.9)',
+            'text-halo-width': 2
+          } }
+
+      ]
+    };
+  }
+
+  function init() {
+    var el = document.getElementById(uid);
+    if (!el) return;
+
+    var cam = JSON.parse(camera);
+
+    var map = new maplibregl.Map({
+      container: uid,
+      style: buildStyle(TILE_URL),
+      center: cam.center,
+      zoom: cam.zoom,
+      pitch: cam.pitch,
+      bearing: cam.bearing,
+      antialias: true,
+      maxPitch: 85,
+      scrollZoom: false,
+      dragPan: false,
+      dragRotate: false,
+      keyboard: false,
+      doubleClickZoom: false,
+      touchZoomRotate: false,
+    });
+
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+  }
+
+  // Load MapLibre only on pages that use this component.
+  // If multiple MapIso instances exist on one page, the window.maplibregl
+  // check prevents loading the script more than once.
+  function loadMapLibre(callback) {
+    if (window.maplibregl) {
+      callback();
+      return;
+    }
+    var script = document.createElement('script');
+    script.src = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js';
+    script.onload = callback;
+    document.head.appendChild(script);
+  }
+
+  loadMapLibre(init);
+
+</script>
+
+<style>
+  .map-iso-wrap {
+    position: relative;
+    width: 100%;
+    margin: var(--space-xl) 0;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .map-iso-canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-iso-label {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    font-family: var(--font-ui);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(196, 149, 106, 0.75);
+    pointer-events: none;
+    margin: 0;
+    max-width: none;
+  }
+
+  /* MapLibre attribution */
+  .map-iso-wrap :global(.maplibregl-ctrl-attrib) {
+    background: rgba(13, 21, 32, 0.6) !important;
+    color: rgba(245, 240, 232, 0.3) !important;
+    font-size: 9px !important;
+  }
+
+  .map-iso-wrap :global(.maplibregl-ctrl-attrib a) {
+    color: rgba(196, 149, 106, 0.4) !important;
+  }
+
+  .map-iso-wrap :global(.maplibregl-ctrl-attrib-button) {
+    filter: invert(1) opacity(0.3) !important;
+  }
+</style>
