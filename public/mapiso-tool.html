@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MapIso Authoring Tool — rpool.live</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #0d1520;
+      --panel-bg:   #111923;
+      --panel-border: rgba(196, 149, 106, 0.15);
+      --sandstone:  #C4956A;
+      --sand-dim:   rgba(196, 149, 106, 0.6);
+      --text:       rgba(245, 240, 232, 0.85);
+      --text-dim:   rgba(245, 240, 232, 0.4);
+      --input-bg:   rgba(255,255,255,0.05);
+      --input-border: rgba(196, 149, 106, 0.2);
+      --section-gap: 18px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--ink);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    /* ── Layout ── */
+    #app {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      height: 100vh;
+    }
+
+    #panel {
+      background: var(--panel-bg);
+      border-right: 1px solid var(--panel-border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Panel sections ── */
+    .panel-header {
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--panel-border);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--sandstone);
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .panel-header span {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .section {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--panel-border);
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--sand-dim);
+      margin-bottom: 10px;
+    }
+
+    /* ── Controls ── */
+    .control-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 52px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .control-row:last-child { margin-bottom: 0; }
+
+    .control-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--sandstone);
+      cursor: pointer;
+      height: 3px;
+    }
+
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text);
+      font-family: 'Inter', monospace;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 2px;
+      outline: none;
+      text-align: right;
+    }
+
+    input[type="number"]:focus, input[type="text"]:focus {
+      border-color: var(--sandstone);
+    }
+
+    /* Coord row — two values */
+    .coord-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    /* ── Colour controls ── */
+    .colour-row {
+      display: grid;
+      grid-template-columns: 16px 100px 1fr 44px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .colour-row:last-child { margin-bottom: 0; }
+
+    .colour-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.15);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    input[type="color"] {
+      opacity: 0;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .colour-label {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .colour-hex {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text);
+      font-family: monospace;
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 2px;
+      outline: none;
+      width: 100%;
+    }
+
+    .colour-hex:focus { border-color: var(--sandstone); }
+
+    .opacity-input {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text);
+      font-size: 11px;
+      padding: 3px 4px;
+      border-radius: 2px;
+      outline: none;
+      width: 44px;
+      text-align: center;
+    }
+
+    /* ── Themes ── */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .theme-btn {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-dim);
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      padding: 7px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 150ms, color 150ms;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .theme-btn:hover {
+      border-color: var(--sandstone);
+      color: var(--text);
+    }
+
+    .theme-btn.active {
+      border-color: var(--sandstone);
+      color: var(--sandstone);
+    }
+
+    .theme-preview {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .theme-preview span {
+      width: 8px;
+      height: 8px;
+      border-radius: 1px;
+    }
+
+    /* ── Output ── */
+    .output-block {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--panel-border);
+      border-radius: 2px;
+      padding: 10px 12px;
+      font-family: monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      white-space: pre;
+      overflow-x: auto;
+      margin-bottom: 8px;
+    }
+
+    .copy-btn {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--panel-border);
+      color: var(--sand-dim);
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 7px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: border-color 150ms, color 150ms;
+      margin-bottom: 8px;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--sandstone);
+      color: var(--sandstone);
+    }
+
+    .copy-btn.copied {
+      border-color: #4a9;
+      color: #4a9;
+    }
+
+    /* ── MapLibre overrides ── */
+    .maplibregl-ctrl-attrib {
+      background: rgba(13,21,32,0.7) !important;
+      font-size: 9px !important;
+    }
+
+    /* Scrollbar */
+    #panel::-webkit-scrollbar { width: 4px; }
+    #panel::-webkit-scrollbar-track { background: transparent; }
+    #panel::-webkit-scrollbar-thumb { background: rgba(196,149,106,0.2); border-radius: 2px; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ── PANEL ── -->
+  <div id="panel">
+
+    <div class="panel-header">
+      MapIso Tool
+      <span>rpool.live authoring</span>
+    </div>
+
+    <!-- Themes -->
+    <div class="section">
+      <div class="section-title">Theme</div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+
+    <!-- Camera -->
+    <div class="section">
+      <div class="section-title">Camera — drag map to update</div>
+
+      <div class="coord-row">
+        <span class="control-label">Centre</span>
+        <input type="number" id="cam-lng" step="0.0001" title="Longitude" />
+        <input type="number" id="cam-lat" step="0.0001" title="Latitude" />
+      </div>
+
+      <div class="control-row">
+        <span class="control-label">Zoom</span>
+        <input type="range" id="zoom-slider" min="10" max="18" step="0.1" />
+        <input type="number" id="zoom-num" min="10" max="18" step="0.1" />
+      </div>
+
+      <div class="control-row">
+        <span class="control-label">Pitch</span>
+        <input type="range" id="pitch-slider" min="0" max="85" step="1" />
+        <input type="number" id="pitch-num" min="0" max="85" step="1" />
+      </div>
+
+      <div class="control-row">
+        <span class="control-label">Bearing</span>
+        <input type="range" id="bearing-slider" min="-180" max="180" step="1" />
+        <input type="number" id="bearing-num" min="-180" max="180" step="1" />
+      </div>
+
+      <div class="control-row" style="margin-top:10px;">
+        <span class="control-label">Height</span>
+        <input type="text" id="height-input" value="420px" style="text-align:left;" />
+        <span></span>
+      </div>
+
+      <div class="control-row">
+        <span class="control-label">Label</span>
+        <input type="text" id="label-input" placeholder="e.g. Liverpool Waterfront" style="text-align:left; grid-column: 2 / 4;" />
+      </div>
+    </div>
+
+    <!-- Colours -->
+    <div class="section">
+      <div class="section-title">Palette</div>
+      <div id="colour-controls"></div>
+    </div>
+
+    <!-- Output -->
+    <div class="section">
+      <div class="section-title">Output</div>
+      <div class="output-block" id="out-component"></div>
+      <button class="copy-btn" id="copy-component">Copy component markup</button>
+      <div class="output-block" id="out-palette"></div>
+      <button class="copy-btn" id="copy-palette">Copy palette object</button>
+    </div>
+
+  </div>
+
+  <!-- ── MAP ── -->
+  <div id="map"></div>
+
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+
+  // ─── KEY ─────────────────────────────────────────────────────────────────
+  var PROTOMAPS_KEY = '2ec0ba0367a35d1c';
+  // ─────────────────────────────────────────────────────────────────────────
+
+  var TILE_URL = 'https://api.protomaps.com/tiles/v4/{z}/{x}/{y}.mvt?key=' + PROTOMAPS_KEY;
+
+  // ─── THEMES ──────────────────────────────────────────────────────────────
+
+  var THEMES = {
+    'Dark Slate': {
+      preview: ['#090e17', '#1a2438', '#1e2d3d', '#C4956A'],
+      palette: {
+        ink:              '#0d1520',
+        mersey:           '#090e17',
+        ground:           '#1a2438',
+        groundDark:       '#131c27',
+        building:         '#1e2d3d',
+        buildingMid1:     '#22334a',
+        buildingMid2:     '#2a3d54',
+        buildingMid3:     '#31495f',
+        buildingMid4:     '#3a5470',
+        buildingTall:     '#435f80',
+        buildingRoof:     '#2a3d4f',
+        buildingRoofMid:  '#3a5060',
+        buildingRoofMid2: '#4a6375',
+        buildingRoofTall: '#5a7a90',
+        shadow:           '#090f18',
+        roadMajor:        'rgba(245,240,232,0.12)',
+        roadMinor:        'rgba(245,240,232,0.07)',
+        roadOther:        'rgba(245,240,232,0.04)',
+        rail:             'rgba(196,149,106,0.25)',
+        ferry:            'rgba(74,120,160,0.35)',
+        waterEdge:        'rgba(74,85,104,0.5)',
+        label:            'rgba(245,240,232,0.4)',
+        labelPlace:       'rgba(196,149,106,0.55)',
+      }
+    },
+    'Warm Sandstone': {
+      preview: ['#1a1008', '#2e1f0e', '#4a3020', '#d4aa85'],
+      palette: {
+        ink:              '#120c06',
+        mersey:           '#0e0905',
+        ground:           '#2a1c10',
+        groundDark:       '#1e1409',
+        building:         '#3d2a18',
+        buildingMid1:     '#4a3420',
+        buildingMid2:     '#573e28',
+        buildingMid3:     '#634830',
+        buildingMid4:     '#705238',
+        buildingTall:     '#806040',
+        buildingRoof:     '#4f3a28',
+        buildingRoofMid:  '#604a35',
+        buildingRoofMid2: '#705a42',
+        buildingRoofTall: '#907050',
+        shadow:           '#080503',
+        roadMajor:        'rgba(245,230,210,0.15)',
+        roadMinor:        'rgba(245,230,210,0.08)',
+        roadOther:        'rgba(245,230,210,0.04)',
+        rail:             'rgba(196,149,106,0.3)',
+        ferry:            'rgba(100,140,180,0.3)',
+        waterEdge:        'rgba(100,90,70,0.5)',
+        label:            'rgba(245,230,210,0.45)',
+        labelPlace:       'rgba(212,170,133,0.65)',
+      }
+    },
+    'Monochrome': {
+      preview: ['#0a0a0a', '#1a1a1a', '#2a2a2a', '#888'],
+      palette: {
+        ink:              '#080808',
+        mersey:           '#060606',
+        ground:           '#161616',
+        groundDark:       '#101010',
+        building:         '#1e1e1e',
+        buildingMid1:     '#252525',
+        buildingMid2:     '#2c2c2c',
+        buildingMid3:     '#333333',
+        buildingMid4:     '#3a3a3a',
+        buildingTall:     '#444444',
+        buildingRoof:     '#282828',
+        buildingRoofMid:  '#323232',
+        buildingRoofMid2: '#3c3c3c',
+        buildingRoofTall: '#505050',
+        shadow:           '#030303',
+        roadMajor:        'rgba(255,255,255,0.12)',
+        roadMinor:        'rgba(255,255,255,0.07)',
+        roadOther:        'rgba(255,255,255,0.03)',
+        rail:             'rgba(255,255,255,0.2)',
+        ferry:            'rgba(180,180,180,0.25)',
+        waterEdge:        'rgba(80,80,80,0.5)',
+        label:            'rgba(255,255,255,0.35)',
+        labelPlace:       'rgba(200,200,200,0.5)',
+      }
+    },
+    'Pale Day': {
+      preview: ['#e8e0d4', '#d0c8b8', '#b8b0a0', '#4a5568'],
+      palette: {
+        ink:              '#ddd8ce',
+        mersey:           '#b8c8d8',
+        ground:           '#e0d8cc',
+        groundDark:       '#ccc4b4',
+        building:         '#c8c0b0',
+        buildingMid1:     '#bcb4a4',
+        buildingMid2:     '#b0a898',
+        buildingMid3:     '#a49c8c',
+        buildingMid4:     '#989080',
+        buildingTall:     '#888070',
+        buildingRoof:     '#d0c8b8',
+        buildingRoofMid:  '#c4bcac',
+        buildingRoofMid2: '#b8b0a0',
+        buildingRoofTall: '#a8a090',
+        shadow:           'rgba(0,0,0,0.15)',
+        roadMajor:        'rgba(60,50,40,0.2)',
+        roadMinor:        'rgba(60,50,40,0.12)',
+        roadOther:        'rgba(60,50,40,0.06)',
+        rail:             'rgba(92,101,120,0.4)',
+        ferry:            'rgba(74,120,160,0.3)',
+        waterEdge:        'rgba(100,120,140,0.4)',
+        label:            'rgba(40,35,30,0.55)',
+        labelPlace:       'rgba(92,63,40,0.7)',
+      }
+    }
+  };
+
+  // Current working palette — starts as a copy of first theme
+  var currentPalette = Object.assign({}, THEMES['Dark Slate'].palette);
+  var activeTheme = 'Dark Slate';
+
+  // ─── PALETTE LABELS ──────────────────────────────────────────────────────
+  // Human-readable names for each palette key
+  var PALETTE_META = {
+    ink:              { label: 'Background',       group: 'Base' },
+    mersey:           { label: 'Water',            group: 'Base' },
+    ground:           { label: 'Land',             group: 'Base' },
+    groundDark:       { label: 'Parks / dark land',group: 'Base' },
+    shadow:           { label: 'Building shadow',  group: 'Buildings' },
+    building:         { label: 'Low buildings',    group: 'Buildings' },
+    buildingMid1:     { label: 'Mid 1',            group: 'Buildings' },
+    buildingMid2:     { label: 'Mid 2',            group: 'Buildings' },
+    buildingMid3:     { label: 'Mid 3',            group: 'Buildings' },
+    buildingMid4:     { label: 'Mid 4',            group: 'Buildings' },
+    buildingTall:     { label: 'Tall buildings',   group: 'Buildings' },
+    buildingRoof:     { label: 'Low roof',         group: 'Roofs' },
+    buildingRoofMid:  { label: 'Mid roof 1',       group: 'Roofs' },
+    buildingRoofMid2: { label: 'Mid roof 2',       group: 'Roofs' },
+    buildingRoofTall: { label: 'Tall roof',        group: 'Roofs' },
+    roadMajor:        { label: 'Major roads',      group: 'Roads' },
+    roadMinor:        { label: 'Minor roads',      group: 'Roads' },
+    roadOther:        { label: 'Paths / other',    group: 'Roads' },
+    rail:             { label: 'Rail',             group: 'Roads' },
+    ferry:            { label: 'Ferry',            group: 'Roads' },
+    waterEdge:        { label: 'Water edge',       group: 'Roads' },
+    label:            { label: 'Road labels',      group: 'Labels' },
+    labelPlace:       { label: 'Place labels',     group: 'Labels' },
+  };
+
+  // ─── MAP INIT ─────────────────────────────────────────────────────────────
+
+  var HOME = { center: [-2.9960, 53.4045], zoom: 15.5, pitch: 52, bearing: -20 };
+
+  var map = new maplibregl.Map({
+    container: 'map',
+    style: buildStyle(),
+    center: HOME.center,
+    zoom: HOME.zoom,
+    pitch: HOME.pitch,
+    bearing: HOME.bearing,
+    antialias: true,
+    maxPitch: 85,
+  });
+
+  map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+
+  // Update camera controls when map moves
+  map.on('move', syncCameraFromMap);
+  map.on('zoom', syncCameraFromMap);
+  map.on('pitch', syncCameraFromMap);
+  map.on('rotate', syncCameraFromMap);
+
+  function syncCameraFromMap() {
+    var c = map.getCenter();
+    setVal('cam-lng', round(c.lng, 6));
+    setVal('cam-lat', round(c.lat, 6));
+    setVal('zoom-slider', round(map.getZoom(), 2));
+    setVal('zoom-num',    round(map.getZoom(), 2));
+    setVal('pitch-slider', Math.round(map.getPitch()));
+    setVal('pitch-num',    Math.round(map.getPitch()));
+    setVal('bearing-slider', Math.round(map.getBearing()));
+    setVal('bearing-num',    Math.round(map.getBearing()));
+    updateOutput();
+  }
+
+  // ─── STYLE ───────────────────────────────────────────────────────────────
+
+  function buildStyle() {
+    var p = currentPalette;
+    return {
+      version: 8,
+      glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
+      sprite: 'https://protomaps.github.io/basemaps-assets/sprites/v4/light',
+      sources: {
+        protomaps: {
+          type: 'vector',
+          tiles: [TILE_URL],
+          maxzoom: 15,
+          attribution: '\u00a9 <a href="https://protomaps.com">Protomaps</a> \u00a9 <a href="https://openstreetmap.org">OpenStreetMap</a>'
+        }
+      },
+      layers: [
+        { id: 'background', type: 'background', paint: { 'background-color': p.ink } },
+        { id: 'earth', type: 'fill', source: 'protomaps', 'source-layer': 'earth', paint: { 'fill-color': p.ground } },
+        { id: 'water', type: 'fill', source: 'protomaps', 'source-layer': 'water', paint: { 'fill-color': p.mersey, 'fill-opacity': 1 } },
+        { id: 'water-edge', type: 'line', source: 'protomaps', 'source-layer': 'water', paint: { 'line-color': p.waterEdge, 'line-width': 1 } },
+        { id: 'landuse-green', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'park', 'garden', 'grass', 'wood', 'forest', 'scrub', 'grassland', 'pitch', 'playground'],
+          paint: { 'fill-color': p.groundDark, 'fill-opacity': 1 } },
+        { id: 'landuse-civic', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'university', 'school', 'college', 'hospital'],
+          paint: { 'fill-color': p.groundDark, 'fill-opacity': 0.6 } },
+        { id: 'landuse-industrial', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'industrial', 'commercial', 'railway'],
+          paint: { 'fill-color': p.groundDark, 'fill-opacity': 0.4 } },
+        { id: 'landuse-pedestrian', type: 'fill', source: 'protomaps', 'source-layer': 'landuse',
+          filter: ['in', 'kind', 'pedestrian', 'pier', 'platform'],
+          paint: { 'fill-color': p.ground, 'fill-opacity': 0.8 } },
+        { id: 'roads-ferry', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'ferry'],
+          paint: { 'line-color': p.ferry, 'line-width': 1.5, 'line-dasharray': [4,4] } },
+        { id: 'roads-other', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['in', 'kind', 'other', 'path'],
+          paint: { 'line-color': p.roadOther, 'line-width': ['interpolate',['linear'],['zoom'],13,0.4,17,1.2] } },
+        { id: 'roads-minor', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'minor_road'],
+          paint: { 'line-color': p.roadMinor, 'line-width': ['interpolate',['linear'],['zoom'],13,0.6,17,2.5] } },
+        { id: 'roads-major', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'major_road'],
+          paint: { 'line-color': p.roadMajor, 'line-width': ['interpolate',['linear'],['zoom'],13,1.2,17,4] } },
+        { id: 'roads-highway', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['==', 'kind', 'highway'],
+          paint: { 'line-color': p.roadMajor, 'line-width': ['interpolate',['linear'],['zoom'],13,2,17,6] } },
+        { id: 'roads-rail', type: 'line', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['in', 'kind', 'rail', 'aerialway', 'aeroway'],
+          paint: { 'line-color': p.rail, 'line-width': ['interpolate',['linear'],['zoom'],13,0.8,17,2], 'line-dasharray': [6,3] } },
+        { id: 'buildings-shadow', type: 'fill-extrusion', source: 'protomaps', 'source-layer': 'buildings',
+          paint: {
+            'fill-extrusion-color': p.shadow,
+            'fill-extrusion-height': ['interpolate',['linear'],['zoom'],14,0,15,['coalesce',['get','height'],10]],
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': 0.5,
+            'fill-extrusion-translate': [3,5]
+          } },
+        { id: 'buildings', type: 'fill-extrusion', source: 'protomaps', 'source-layer': 'buildings',
+          paint: {
+            'fill-extrusion-color': ['interpolate',['linear'],['coalesce',['get','height'],8],
+              0,p.building, 10,p.buildingMid1, 20,p.buildingMid2,
+              40,p.buildingMid3, 80,p.buildingMid4, 150,p.buildingTall],
+            'fill-extrusion-height': ['interpolate',['linear'],['zoom'],14,0,15,['coalesce',['get','height'],10]],
+            'fill-extrusion-base': ['interpolate',['linear'],['zoom'],14,0,15,['coalesce',['get','min_height'],0]],
+            'fill-extrusion-opacity': ['interpolate',['linear'],['zoom'],14,0,15,0.95]
+          } },
+        { id: 'buildings-roof', type: 'fill-extrusion', source: 'protomaps', 'source-layer': 'buildings',
+          paint: {
+            'fill-extrusion-color': ['interpolate',['linear'],['coalesce',['get','height'],8],
+              0,p.buildingRoof, 20,p.buildingRoofMid, 60,p.buildingRoofMid2, 120,p.buildingRoofTall],
+            'fill-extrusion-height': ['interpolate',['linear'],['zoom'],14,0,15,['+',['coalesce',['get','height'],10],0.3]],
+            'fill-extrusion-base': ['interpolate',['linear'],['zoom'],14,0,15,['coalesce',['get','height'],10]],
+            'fill-extrusion-opacity': ['interpolate',['linear'],['zoom'],14,0,15,0.7]
+          } },
+        { id: 'road-labels', type: 'symbol', source: 'protomaps', 'source-layer': 'roads',
+          filter: ['in','kind','major_road','minor_road'],
+          layout: {
+            'text-field': ['coalesce',['get','name'],['get','ref']],
+            'text-font': ['Noto Sans Regular'],
+            'text-size': ['interpolate',['linear'],['zoom'],14,9,17,12],
+            'symbol-placement': 'line', 'text-max-angle': 30
+          },
+          paint: { 'text-color': p.label, 'text-halo-color': 'rgba(13,21,32,0.85)', 'text-halo-width': 1.5 } },
+        { id: 'place-labels', type: 'symbol', source: 'protomaps', 'source-layer': 'places',
+          filter: ['in','kind','neighbourhood','quarter','suburb'],
+          layout: {
+            'text-field': ['get','name'], 'text-font': ['Noto Sans Regular'],
+            'text-size': ['interpolate',['linear'],['zoom'],13,10,16,14],
+            'text-transform': 'uppercase', 'text-letter-spacing': 0.12
+          },
+          paint: { 'text-color': p.labelPlace, 'text-halo-color': 'rgba(13,21,32,0.9)', 'text-halo-width': 2 } }
+      ]
+    };
+  }
+
+  function applyPalette() {
+    map.setStyle(buildStyle());
+  }
+
+  // ─── THEME BUTTONS ───────────────────────────────────────────────────────
+
+  var themeGrid = document.getElementById('theme-grid');
+  Object.keys(THEMES).forEach(function(name) {
+    var t = THEMES[name];
+    var btn = document.createElement('button');
+    btn.className = 'theme-btn' + (name === activeTheme ? ' active' : '');
+    btn.innerHTML =
+      '<div class="theme-preview">' +
+        t.preview.map(function(c) { return '<span style="background:' + c + '"></span>'; }).join('') +
+      '</div>' + name;
+    btn.addEventListener('click', function() {
+      activeTheme = name;
+      currentPalette = Object.assign({}, t.palette);
+      document.querySelectorAll('.theme-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      rebuildColourControls();
+      applyPalette();
+      updateOutput();
+    });
+    themeGrid.appendChild(btn);
+  });
+
+  // ─── COLOUR CONTROLS ─────────────────────────────────────────────────────
+
+  function rebuildColourControls() {
+    var container = document.getElementById('colour-controls');
+    container.innerHTML = '';
+
+    var groups = {};
+    Object.keys(PALETTE_META).forEach(function(key) {
+      var g = PALETTE_META[key].group;
+      if (!groups[g]) groups[g] = [];
+      groups[g].push(key);
+    });
+
+    Object.keys(groups).forEach(function(groupName) {
+      var groupTitle = document.createElement('div');
+      groupTitle.style.cssText = 'font-size:10px; color:rgba(196,149,106,0.4); text-transform:uppercase; letter-spacing:0.08em; margin: 10px 0 6px;';
+      groupTitle.textContent = groupName;
+      container.appendChild(groupTitle);
+
+      groups[groupName].forEach(function(key) {
+        var val = currentPalette[key];
+        var row = document.createElement('div');
+        row.className = 'colour-row';
+
+        // Parse colour — could be hex or rgba()
+        var hex = toHex(val);
+        var opacity = toOpacity(val);
+        var isRgba = val.indexOf('rgba') === 0;
+
+        var swatch = document.createElement('div');
+        swatch.className = 'colour-swatch';
+        swatch.style.background = val;
+        swatch.title = 'Click to pick colour';
+
+        // Hidden colour picker
+        var picker = document.createElement('input');
+        picker.type = 'color';
+        picker.value = hex;
+
+        var swatchWrap = document.createElement('div');
+        swatchWrap.style.position = 'relative';
+        swatchWrap.appendChild(swatch);
+        swatchWrap.appendChild(picker);
+
+        swatch.addEventListener('click', function() {
+          picker.style.pointerEvents = 'auto';
+          picker.click();
+          picker.style.pointerEvents = 'none';
+        });
+
+        var label = document.createElement('span');
+        label.className = 'colour-label';
+        label.textContent = PALETTE_META[key].label;
+
+        var hexInput = document.createElement('input');
+        hexInput.type = 'text';
+        hexInput.className = 'colour-hex';
+        hexInput.value = hex;
+        hexInput.maxLength = 7;
+
+        var opInput = document.createElement('input');
+        opInput.type = 'number';
+        opInput.className = 'opacity-input';
+        opInput.min = 0; opInput.max = 1; opInput.step = 0.05;
+        opInput.value = opacity;
+        opInput.title = 'Opacity';
+        if (!isRgba) opInput.style.opacity = '0.3';
+
+        function updateFromHex(h) {
+          if (!/^#[0-9a-fA-F]{6}$/.test(h)) return;
+          swatch.style.background = isRgba
+            ? hexToRgba(h, parseFloat(opInput.value))
+            : h;
+          currentPalette[key] = isRgba
+            ? hexToRgba(h, parseFloat(opInput.value))
+            : h;
+          picker.value = h;
+          applyPalette();
+          updateOutput();
+        }
+
+        function updateFromOpacity(o) {
+          if (!isRgba) return;
+          var h = hexInput.value;
+          if (!/^#[0-9a-fA-F]{6}$/.test(h)) return;
+          var newVal = hexToRgba(h, o);
+          swatch.style.background = newVal;
+          currentPalette[key] = newVal;
+          applyPalette();
+          updateOutput();
+        }
+
+        picker.addEventListener('input', function() {
+          hexInput.value = picker.value;
+          updateFromHex(picker.value);
+        });
+
+        hexInput.addEventListener('change', function() {
+          var v = hexInput.value;
+          if (v[0] !== '#') v = '#' + v;
+          hexInput.value = v;
+          updateFromHex(v);
+        });
+
+        opInput.addEventListener('input', function() {
+          updateFromOpacity(parseFloat(opInput.value));
+        });
+
+        row.appendChild(swatchWrap);
+        row.appendChild(label);
+        row.appendChild(hexInput);
+        row.appendChild(opInput);
+        container.appendChild(row);
+      });
+    });
+  }
+
+  rebuildColourControls();
+
+  // ─── CAMERA CONTROLS ─────────────────────────────────────────────────────
+
+  function setVal(id, v) {
+    var el = document.getElementById(id);
+    if (el) el.value = v;
+  }
+
+  function getVal(id) {
+    return parseFloat(document.getElementById(id).value);
+  }
+
+  // Initialise camera inputs
+  syncCameraFromMap();
+
+  function syncMapFromCamera() {
+    map.easeTo({
+      center: [getVal('cam-lng'), getVal('cam-lat')],
+      zoom: getVal('zoom-num'),
+      pitch: getVal('pitch-num'),
+      bearing: getVal('bearing-num'),
+      duration: 200
+    });
+  }
+
+  function linkSliderNum(sliderId, numId, fn) {
+    var slider = document.getElementById(sliderId);
+    var num    = document.getElementById(numId);
+    slider.addEventListener('input', function() {
+      num.value = slider.value;
+      fn(parseFloat(slider.value));
+    });
+    num.addEventListener('change', function() {
+      slider.value = num.value;
+      fn(parseFloat(num.value));
+    });
+  }
+
+  linkSliderNum('zoom-slider',    'zoom-num',    function(v) { map.easeTo({ zoom: v, duration: 200 }); });
+  linkSliderNum('pitch-slider',   'pitch-num',   function(v) { map.easeTo({ pitch: v, duration: 200 }); });
+  linkSliderNum('bearing-slider', 'bearing-num', function(v) { map.easeTo({ bearing: v, duration: 200 }); });
+
+  document.getElementById('cam-lng').addEventListener('change', syncMapFromCamera);
+  document.getElementById('cam-lat').addEventListener('change', syncMapFromCamera);
+
+  document.getElementById('height-input').addEventListener('input', updateOutput);
+  document.getElementById('label-input').addEventListener('input', updateOutput);
+
+  // ─── OUTPUT ──────────────────────────────────────────────────────────────
+
+  function updateOutput() {
+    var c = map.getCenter();
+    var lng = round(c.lng, 6);
+    var lat = round(c.lat, 6);
+    var zoom = round(map.getZoom(), 1);
+    var pitch = Math.round(map.getPitch());
+    var bearing = Math.round(map.getBearing());
+    var height = document.getElementById('height-input').value || '420px';
+    var label = document.getElementById('label-input').value;
+
+    var component = '<MapIso\n' +
+      '  center={[' + lng + ', ' + lat + ']}\n' +
+      '  zoom={' + zoom + '}\n' +
+      '  pitch={' + pitch + '}\n' +
+      '  bearing={' + bearing + '}\n' +
+      '  height="' + height + '"' +
+      (label ? '\n  label="' + label + '"' : '') +
+      '\n/>';
+
+    document.getElementById('out-component').textContent = component;
+
+    // Palette output — condensed to keys MapIso.astro actually uses
+    var keys = ['ink','mersey','ground','groundDark','shadow',
+      'building','buildingMid1','buildingMid2','buildingMid3','buildingMid4','buildingTall',
+      'buildingRoof','buildingRoofMid','buildingRoofMid2','buildingRoofTall',
+      'roadMajor','roadMinor','roadOther','rail','ferry','waterEdge','label','labelPlace'];
+
+    var palStr = 'const PALETTE = {\n';
+    keys.forEach(function(k) {
+      palStr += '  ' + k + ': ' + JSON.stringify(currentPalette[k]) + ',\n';
+    });
+    palStr += '};';
+
+    document.getElementById('out-palette').textContent = palStr;
+  }
+
+  map.on('load', updateOutput);
+
+  // ─── COPY BUTTONS ────────────────────────────────────────────────────────
+
+  function makeCopyBtn(btnId, sourceId) {
+    document.getElementById(btnId).addEventListener('click', function() {
+      var text = document.getElementById(sourceId).textContent;
+      navigator.clipboard.writeText(text).then(function() {
+        var btn = document.getElementById(btnId);
+        var orig = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = orig;
+          btn.classList.remove('copied');
+        }, 1500);
+      });
+    });
+  }
+
+  makeCopyBtn('copy-component', 'out-component');
+  makeCopyBtn('copy-palette',   'out-palette');
+
+  // ─── HELPERS ─────────────────────────────────────────────────────────────
+
+  function round(v, dp) {
+    return Math.round(v * Math.pow(10, dp)) / Math.pow(10, dp);
+  }
+
+  function toHex(val) {
+    if (val && val[0] === '#') return val.slice(0,7);
+    var m = val && val.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (m) {
+      return '#' +
+        ('0' + parseInt(m[1]).toString(16)).slice(-2) +
+        ('0' + parseInt(m[2]).toString(16)).slice(-2) +
+        ('0' + parseInt(m[3]).toString(16)).slice(-2);
+    }
+    return '#888888';
+  }
+
+  function toOpacity(val) {
+    var m = val && val.match(/rgba\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)/);
+    return m ? parseFloat(m[1]) : 1;
+  }
+
+  function hexToRgba(hex, opacity) {
+    var r = parseInt(hex.slice(1,3),16);
+    var g = parseInt(hex.slice(3,5),16);
+    var b = parseInt(hex.slice(5,7),16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+  }
+
+</script>
+</body>
+</html>

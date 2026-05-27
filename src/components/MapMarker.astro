@@ -5,6 +5,7 @@ interface Props {
   zoom?: number;
   caption?: string;
   height?: string;
+  width?: string;
   inline?: boolean;
   static?: boolean;
   float?: 'left' | 'right';
@@ -16,6 +17,7 @@ const {
   zoom = 15, 
   caption, 
   height = '400px',
+  width = '200px',
   inline = false,
   static: isStatic = false,
   float = 'right'
@@ -24,7 +26,7 @@ const {
 const mapId = `map-${Math.random().toString(36).slice(2, 9)}`;
 ---
 
-<figure class={`map-figure${inline ? ` map-inline map-float-${float}` : ''}`}>
+<figure class={`map-figure${inline ? ` map-inline map-float-${float}` : ''}`} style={inline ? `width: ${width}` : ''}>
   {isStatic ? (
     <div class="map-static-wrapper" style={inline ? '' : `height: ${height}`}>
       <img 
@@ -113,7 +115,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
   }
 
   .map-inline {
-    width: 200px;
     margin-top: 0.25rem;
     margin-bottom: 1rem;
   }
