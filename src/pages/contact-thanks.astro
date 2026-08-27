@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const pageTitle = 'Message sent';
+const description = 'Your message has been received.';
+---
+
+<BaseLayout pageTitle={pageTitle} description={description}>
+  <div class="thanks-page">
+    <h1 class="thanks-title">✓ Message sent</h1>
+    <p class="thanks-body">
+      Thank you — I'll be in touch when I can.
+    </p>
+    <a class="thanks-back" href="/">← Back to the site</a>
+  </div>
+</BaseLayout>
+
+<style>
+  .thanks-page {
+    padding-bottom: 8rem;
+    padding-top: 9rem;why d
+    max-width: 480px;
+  }
+
+  .thanks-body {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    line-height: 1.65;
+    color: var(--color-mersey);
+    margin: 0 0 2.5rem;
+  }
+
+  .thanks-back {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+    transition: opacity 0.15s;
+  }
+
+  .thanks-back:hover {
+    opacity: 0.6;
+  }
+</style>

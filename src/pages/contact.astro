@@ -1,0 +1,236 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const pageTitle = 'Contact';
+const description = 'Get in touch.';
+
+const web3formsKey = import.meta.env.PUBLIC_WEB3FORMS_KEY;
+---
+
+<BaseLayout pageTitle={pageTitle} description={description}>
+  <div class="contact-page">
+        <div class="page-header">
+          <h1>Get in touch</h1>
+              <p class="subtitle">Questions, corrections, research leads, or just a note — all welcome.</p>
+        </div>
+    <div class="contact-inner">
+      </div>
+
+      <form class="contact-form" id="contact-form">
+        <input type="hidden" name="access_key" value={web3formsKey} />
+        <input type="hidden" name="redirect" value="https://rpool.live/contact-thanks" />
+        <input type="hidden" name="subject" value="Message via rpool.live" />
+        <input type="checkbox" name="botcheck" style="display:none" />
+
+        <div class="field-group">
+          <label class="field-label" for="name">Name</label>
+          <input
+            class="field-input"
+            type="text"
+            id="name"
+            name="name"
+            required
+            autocomplete="name"
+            placeholder="Your name"
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="email">Contact email</label>
+          <input
+            class="field-input"
+            type="email"
+            id="email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="message">Message</label>
+          <textarea
+            class="field-input field-textarea"
+            id="message"
+            name="message"
+            required
+            rows="7"
+            placeholder="Your message"
+          ></textarea>
+        </div>
+
+        <div class="form-footer">
+          <button class="submit-btn" type="submit">
+            <span class="submit-label">Send message</span>
+            <span class="submit-arrow" aria-hidden="true">→</span>
+          </button>
+          <p class="form-note" id="form-status" aria-live="polite"></p>
+        </div>
+      </form>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const status = document.getElementById('form-status') as HTMLParagraphElement;
+  const btn = form?.querySelector('.submit-btn') as HTMLButtonElement;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.classList.add('is-sending');
+    status.textContent = '';
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      });
+
+      const json = await res.json();
+
+      if (res.ok && json.success) {
+        window.location.href = '/contact-thanks';
+      } else {
+        status.textContent = json.message ?? 'Something went wrong. Please try again.';
+        btn.disabled = false;
+        btn.classList.remove('is-sending');
+      }
+    } catch {
+      status.textContent = 'Could not send — please check your connection.';
+      btn.disabled = false;
+      btn.classList.remove('is-sending');
+    }
+  });
+</script>
+
+<style>
+  .contact-page {
+    padding-bottom: 8rem;
+  }
+
+  .contact-inner {
+    max-width: 600px;
+  }
+
+  /* ── Header ── */
+
+  .contact-lede {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    line-height: 1.65;
+    color: var(--color-mersey);
+    margin: 0;
+  }
+
+  /* ── Form ── */
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .field-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-mersey);
+  }
+
+  .field-input {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: 0.55rem 0;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.18s ease;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .field-input::placeholder {
+    color: var(--color-sandstone-light);
+  }
+
+  .field-input:focus {
+    border-bottom-color: var(--color-text);
+  }
+
+  .field-textarea {
+    resize: vertical;
+    min-height: 140px;
+  }
+
+  /* ── Submit ── */
+  .form-footer {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding-top: 0.5rem;
+  }
+
+  .submit-btn {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    background: transparent;
+    border: 1px solid var(--color-text);
+    padding: 0.7rem 1.4rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    background: var(--color-text);
+    color: var(--color-background);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .submit-arrow {
+    display: inline-block;
+    transition: transform 0.18s ease;
+  }
+
+  .submit-btn:hover:not(:disabled) .submit-arrow {
+    transform: translateX(3px);
+  }
+
+  .submit-btn.is-sending .submit-label::after {
+    content: '…';
+  }
+
+  .form-note {
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 0.95rem;
+    color: var(--color-sandstone);
+    margin: 0;
+  }
+</style>
