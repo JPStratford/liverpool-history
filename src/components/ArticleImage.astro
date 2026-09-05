@@ -4,7 +4,7 @@ import { Image } from 'astro:assets';
 interface Props {
   src: ImageMetadata;
   alt: string;
-  width: number;
+  width?: number;
   float?: 'left' | 'right';
   caption?: string;
   marker?: number;
@@ -12,18 +12,20 @@ interface Props {
 
 const { src, alt, width, float, caption, marker } = Astro.props;
 const aspectRatio = src.height / src.width;
-const height = Math.round(width * aspectRatio);
+const resolvedWidth = width ?? src.width;
+const resolvedHeight = width ? Math.round(width * aspectRatio) : src.height;
 ---
 
-<figure 
-    id={marker ? `figure-${marker}` : undefined}
-    class:list={['article-figure', 'lightbox-figure', float && `article-figure--${float}`]}
-    style={`width: ${width}px`}>
-   <Image
+<figure
+  id={marker ? `figure-${marker}` : undefined}
+  class:list={['article-figure', 'lightbox-figure', float && `article-figure--${float}`]}
+  style={width ? `width: ${width}px` : undefined}
+>
+  <Image
     {src}
     {alt}
-    {width}
-    {height}
+    width={resolvedWidth}
+    height={resolvedHeight}
     class="lightbox-trigger"
   />
   {(caption || marker) && (
