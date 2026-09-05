@@ -20,7 +20,7 @@
   /* Type scale */
   --text-xs:  0.75rem;
   --text-sm:  0.875rem;
-  --text-base: 1.25rem;
+  --text-base: 1.45rem;
   --text-lg:  1.4rem;
   --text-xl:  1.65rem;
   --text-2xl: 2.1rem;
@@ -371,6 +371,7 @@ nav {
 
 .article-header h1 {
   margin-bottom: var(--space-md);
+  text-wrap: balance;
 }
 
 .article-meta {
@@ -402,8 +403,18 @@ nav {
 
 .article-content p {
   font-size: var(--text-base);
-  line-height: 1.9;
+  line-height: 1.75;
+  text-indent: 1.5em;
+  margin-bottom: 0;
   text-wrap: pretty;
+  hyphens: auto;
+}
+
+.article-content h2 + p,
+.article-content h3 + p,
+.article-content .standfirst + p,
+.article-content p:first-child {
+  text-indent: 0;
 }
 
 .article-content h2 {
@@ -420,26 +431,12 @@ nav {
   margin-bottom: var(--space-sm);
 }
 
-.article-content img {
-  margin: var(--space-xl) 0;
-  border-radius: 2px;
-}
-
-.article-content img + em {
-  display: block;
-  font-size: var(--text-sm);
-  color: var(--color-mersey);
-  font-family: var(--font-ui);
-  margin-top: calc(var(--space-sm) * -1);
-  margin-bottom: var(--space-xl);
-}
-
 .article-container {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: var(--space-2xl);
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-xl);
   align-items: start;
-  max-width: 1100px;
+  max-width: 1500px;
   margin: 0 auto;
   padding-top: var(--space-lg);
 }
@@ -453,7 +450,7 @@ nav {
   position: sticky;
   top: 100px;
   align-self: start;
-  padding-left: var(--space-xl);
+  padding-left: var(--space-md);
   border-left: 1px solid var(--color-border);
 }
 
@@ -464,6 +461,7 @@ nav {
 .toc-heading {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
+  text-align: left;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -471,16 +469,19 @@ nav {
   margin-bottom: var(--space-md);
 }
 
-#toc-nav {
+#rpool-toc-nav {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
   align-items: start;
+  padding: 0;
+  max-width: none;
+  margin: 0;
 }
 
 .toc-link {
   font-family: var(--font-ui);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-mersey);
   line-height: 1.4;
   transition: color var(--transition);
@@ -496,16 +497,6 @@ nav {
   color: var(--color-sandstone);
   opacity: 1;
   font-weight: 500;
-}
-
-@media (max-width: 900px) {
-  .article-container {
-    grid-template-columns: 1fr;
-  }
-
-  .article-toc {
-    display: none !important;
-  }
 }
 
 .youtube-embed {
@@ -1161,8 +1152,8 @@ footer {
 
 @media (max-width: 768px) {
   :root {
-    --text-base: 1.1rem;
-    --text-lg: 1.25rem;
+    --text-base: 1.45rem;
+    --text-lg: 1.65rem;
   }
 
   h1 {
@@ -1245,6 +1236,17 @@ footer {
   .about-content {
   margin-top: var(--space-lg);
 }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --text-base: 1.1rem;
+    --text-lg: 1.25rem;
+  }
+
+    .article-content p {
+    line-height: 1.7;
+  }
 }
 
 /* ================================
@@ -1460,6 +1462,57 @@ nav {
   background: var(--color-sandstone);
   color: var(--color-background);
 }
+/* ================================
+   ARTICLE IMAGE STYLES
+================================ */
+
+.article-figure {
+  margin: 0 0 1.5rem 0;
+}
+
+.article-figure--left {
+  float: left;
+  margin: 0.25rem 2rem 1rem 0;
+}
+
+.article-figure--right {
+  float: right;
+  margin: 0.25rem 0 1rem 2rem;
+}
+
+.article-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.article-figure picture {
+  display: block;
+  margin-bottom: 0;
+}
+
+.article-figure figcaption {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #888);
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+.article-content::after {
+  content: '';
+  display: table;
+  clear: both;
+}
+
+.article-figure figcaption sup a {
+  color: var(--color-accent);
+  text-decoration: none;
+  margin-left: 0.1em;
+}
+
+.article-figure figcaption sup a:hover {
+  text-decoration: underline;
+}
 
 @media (max-width: 768px) {
   .search-modal {
@@ -1476,9 +1529,18 @@ nav {
   .nav-right {
   margin-left: auto;
 }
+
 /* Override the margin-bottom of the nav search button to align it better with the other nav items on mobile */
   .nav-search-btn {
     margin-bottom: 0 px;
     padding: 6px 4px 2px 4px;
+  }
+
+/* Override the float and margin of article figures on mobile to make them full width and stack vertically */
+  .article-figure--left,
+  .article-figure--right {
+    float: none;
+    margin: 0 0 1.5rem 0;
+    width: 100% !important;
   }
 }

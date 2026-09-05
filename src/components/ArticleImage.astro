@@ -1,26 +1,53 @@
 ---
-const { src, alt, caption } = Astro.props;
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  width: number;
+  float?: 'left' | 'right';
+  caption?: string;
+  marker?: number;
+}
+
+const { src, alt, width, float, caption, marker } = Astro.props;
+const aspectRatio = src.height / src.width;
+const height = Math.round(width * aspectRatio);
 ---
 
-<figure class="lightbox-figure">
-  <img 
-    src={src} 
-    alt={alt} 
+<figure 
+    id={marker ? `figure-${marker}` : undefined}
+    class:list={['article-figure', 'lightbox-figure', float && `article-figure--${float}`]}
+    style={`width: ${width}px`}>
+   <Image
+    {src}
+    {alt}
+    {width}
+    {height}
     class="lightbox-trigger"
-    loading="lazy"
   />
-  {caption && <figcaption>{caption}</figcaption>}
+  {(caption || marker) && (
+    <figcaption>
+      {caption}{marker && <sup><a href={`#credit-${marker}`}>{marker}</a></sup>}
+    </figcaption>
+  )}
 </figure>
 
 <div class="lightbox-overlay" role="dialog" aria-modal="true" aria-label={alt}>
   <button class="lightbox-close" aria-label="Close image">✕</button>
-  <img src={src} alt={alt} class="lightbox-full" />
+  <Image
+    {src}
+    {alt}
+    width={1600}
+    height={Math.round(1600 * aspectRatio)}
+    class="lightbox-full"
+  />
   {caption && <p class="lightbox-caption">{caption}</p>}
 </div>
 
 <script>
   const figures = document.querySelectorAll('.lightbox-figure');
-  
+
   figures.forEach((figure) => {
     const trigger = figure.querySelector('.lightbox-trigger');
     const overlay = figure.nextElementSibling as HTMLElement;

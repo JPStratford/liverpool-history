@@ -47,7 +47,7 @@ const { frontmatter } = Astro.props;
 
     <aside class="article-toc" id="article-toc">
       <p class="toc-heading">Contents</p>
-      <nav id="toc-nav"></nav>
+      <nav id="rpool-toc-nav"></nav>
     </aside>
   </article>
 
@@ -55,7 +55,7 @@ const { frontmatter } = Astro.props;
 
 <script>
   const articleContent = document.getElementById('article-content');
-  const tocNav = document.getElementById('toc-nav');
+  const tocNav = document.getElementById('rpool-toc-nav');
   const toc = document.getElementById('article-toc');
 
   if (articleContent && tocNav && toc) {
