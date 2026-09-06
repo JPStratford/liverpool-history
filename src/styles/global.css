@@ -407,7 +407,7 @@ nav {
   text-indent: 1.5em;
   margin-bottom: 0;
   text-wrap: pretty;
-  hyphens: auto;
+  hyphens: none;
 }
 
 .article-content h2 + p,
