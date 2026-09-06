@@ -31,6 +31,7 @@ const articles = defineCollection({
       src: image(),
       alt: z.string(),
       position: z.string().optional(),
+      caption: z.string().optional(),
     }).optional(),
     featured: z.boolean().default(false),
     draft: z.boolean().default(true),

@@ -11,7 +11,7 @@ const { frontmatter } = Astro.props;
   ogImage={frontmatter.heroImage?.src?.src}  ogType="article"
 >
 {frontmatter.heroImage && (
-  <div class="hero-image">
+  <figure class="hero-image">
     <Image
       src={frontmatter.heroImage.src}
       alt={frontmatter.heroImage.alt}
@@ -19,7 +19,10 @@ const { frontmatter } = Astro.props;
       height={1080}
       style={frontmatter.heroImage.position ? `object-position: ${frontmatter.heroImage.position}` : ''}
     />
-  </div>
+    {frontmatter.heroImage.caption && (
+      <figcaption class="hero-caption">{frontmatter.heroImage.caption}</figcaption>
+    )}
+  </figure>
 )}
 
 <article class="article-container">
@@ -59,8 +62,7 @@ const { frontmatter } = Astro.props;
   const toc = document.getElementById('article-toc');
 
   if (articleContent && tocNav && toc) {
-    const headings = articleContent.querySelectorAll('h2');
-
+      const headings = articleContent.querySelectorAll('h2:not(.credits-heading)');
     if (headings.length >= 3) {
       toc.classList.add('toc-visible');
 
