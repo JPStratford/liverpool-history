@@ -1582,7 +1582,7 @@ nav {
   .article-figure--left,
   .article-figure--right {
     float: none;
-    margin: 0 0 1.5rem 0;
+    margin: 1.5rem 0 1.5rem 0;
     width: 100% !important;
   }
 }
