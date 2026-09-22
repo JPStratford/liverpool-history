@@ -10,4 +10,4 @@ heroImage:
 order: 2
 ---
 
-The Georgian era made Liverpool, in every sense of that phrase.
+The Georgian era made Liverpool, in every sense. It was also its darkest chapter.

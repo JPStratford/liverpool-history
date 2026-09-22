@@ -10,4 +10,4 @@ heroImage:
 order: 1
 ---
 
-Liverpool's story begins not with grandeur but with pragmatism.
+Liverpool's story has modest beginnings.

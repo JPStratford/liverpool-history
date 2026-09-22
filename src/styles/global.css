@@ -1013,7 +1013,7 @@ footer {
 }
 
 .home-intro {
-  padding: var(--space-2xl) var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
   max-width: var(--max-width-content);
   margin: 0 auto;
 }
@@ -1035,16 +1035,15 @@ footer {
 }
 
 .home-eras {
-  padding: var(--space-xl) var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
 }
 
 .home-articles {
-  padding: var(--space-xl) var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
 }
 
 .home-tours {
-  padding: var(--space-2xl) var(--space-lg);
-  margin-top: var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
 }
 
 .tours-inner {
