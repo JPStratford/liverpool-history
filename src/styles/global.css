@@ -1516,6 +1516,10 @@ nav {
   margin: 1.5rem 2rem 1rem 0;
 }
 
+.article-figure--left.article-figure--flush {
+  margin-right: 0
+}
+
 .article-figure--right {
   float: right;
   margin: 1.5rem 0 1rem 2rem;
@@ -1573,7 +1577,7 @@ nav {
 
 /* Override the margin-bottom of the nav search button to align it better with the other nav items on mobile */
   .nav-search-btn {
-    margin-bottom: 0 px;
+    margin-bottom: 0;
     padding: 6px 4px 2px 4px;
   }
 

@@ -4,22 +4,25 @@ import { Image } from 'astro:assets';
 interface Props {
   src: ImageMetadata;
   alt: string;
-  width?: number;
+  width?: number | string;
   float?: 'left' | 'right';
+  flush?: boolean;
   caption?: string;
   marker?: number;
 }
 
-const { src, alt, width, float, caption, marker } = Astro.props;
+const { src, alt, width, float, flush, caption, marker } = Astro.props;
 const aspectRatio = src.height / src.width;
-const resolvedWidth = width ?? src.width;
-const resolvedHeight = width ? Math.round(width * aspectRatio) : src.height;
+const numericWidth = typeof width === 'number' ? width : undefined;
+const resolvedWidth = numericWidth ?? src.width;
+const resolvedHeight = numericWidth ? Math.round(numericWidth * aspectRatio) : src.height;
+const cssWidth = typeof width === 'number' ? `${width}px` : width;
 ---
 
 <figure
   id={marker ? `figure-${marker}` : undefined}
-  class:list={['article-figure', 'lightbox-figure', float && `article-figure--${float}`]}
-  style={width ? `width: ${width}px` : undefined}
+  class:list={['article-figure', 'lightbox-figure', float && `article-figure--${float}`, flush && 'article-figure--flush']}
+  style={cssWidth ? `width: ${cssWidth}` : undefined}
 >
   <Image
     {src}
